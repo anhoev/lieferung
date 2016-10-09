@@ -1,0 +1,26 @@
+{
+  "name": "cms-boierplate",
+  "version": "0.0.0",
+  "description": "",
+  "main": "index.html",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anhoev/cms-boierplate.git"
+  },
+  "author": "Tran Tuan Anh <anhoev@yahoo.de>",
+  "private": true,
+  "license": "proprietary",
+  "devDependencies": {},
+  "scripts": {
+    "test": "node --debug-brk=5555 --expose-debug-as=v8debug --harmony_destructuring --harmony-proxies --harmony_default_parameters ./backend/index.js",
+    "prestart": "rm /root/.forever/store.log",
+    "start": "forever --uid \"store\" start -c 'node --harmony_destructuring --harmony-proxies --harmony_default_parameters' ./backend/index.js",
+    "stop": "forever stop store"
+  },
+  "dependencies": {
+    "cmsmon": "git+https://github.com/anhoev/cms.git",
+    "deasync": "^0.1.7",
+    "moment-timezone": "^0.5.5",
+    "q": "^1.4.1"
+  }
+}

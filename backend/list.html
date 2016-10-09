@@ -1,0 +1,17 @@
+<div style="padding: 15px;">
+
+    <div id="list" style="margin-bottom: 20px;padding-top: 20px;height: initial" class="page">
+        <div class="row">
+
+            <div ng-repeat="product in products" class="col-xs-2" style="min-height: 200px;">
+                <img ng-src="{{product.picture}}" height="80px" width="80px"
+                     style="display: block;margin-left: auto;margin-right: auto;-webkit-print-color-adjust: exact;">
+
+                <h5 style="margin-top: 20px;text-align: center">{{ product.name }}</h5>
+            </div>
+        </div>
+    </div>
+
+    <button ng-click="print()" class="btn btn-primary">Print</button>
+    <button ng-click="modal.dismiss()" class="btn btn-primary">Cancel</button>
+</div>

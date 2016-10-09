@@ -1,0 +1,99 @@
+<div style="padding: 15px;">
+
+    <div id="rechnung" class="page" style="margin-bottom: 20px;padding-top: 100px;padding-left: 50px;padding-right: 50px">
+
+        <div class="col-xs-7" style="font-size: 0.8em">
+            {{ model.paymentOption }}
+        </div>
+        <div class="col-xs-5" style="font-size: 0.8em">
+            <p class="head-line">{{ info.name }}</p>
+            <p class="head-line">{{ info.address.street }}</p>
+            <p class="head-line">{{ info.address.zipcode }}&nbsp;{{ info.address.city }}</p>
+            <br>
+            <p class="head-line">RechungNr: <span class="pull-right">{{ model.Id }}</span></p>
+            <p class="head-line">KundenNr: <span class="pull-right">{{ model.customer.Id }}</span></p>
+            <p class="head-line">Datum: <span class="pull-right">{{ model.date | date:'dd.MM.yyyy'}}</span></p>
+            <p class="head-line">Lieferdatum: <span class="pull-right">{{ model.shipDate | date:'dd.MM.yyyy'}}</span></p>
+        </div>
+
+        <div class="clearfix"></div>
+
+        <br>
+        <br>
+
+        <div class="col-xs-12">
+            <h5>Rechnung</h5>
+        </div>
+
+        <br>
+        <br>
+        <br>
+
+        <div class="col-xs-12">
+            <table class="table table-striped">
+                <thead>
+                <tr>
+                    <th>Artikel</th>
+                    <th>Menge</th>
+                    <th>Einheit</th>
+                    <th>Preis/EUR</th>
+                    <th>Mwst.-Satz</th>
+                    <th>Gesamt/EUR</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr ng-repeat="item in model.item | filter: showItem" class="with-bg">
+                    <td>{{ item.product.name }}</td>
+                    <td>{{ item.billQuantity || item.quantity }}</td>
+                    <td>{{ item.unit.name }}</td>
+                    <td>{{ item.billPrice ||item.price }}</td>
+                    <td>{{ item.product.exportVat }}</td>
+                    <td>{{ (item.billPrice ||item.price) * (item.billQuantity || item.quantity) }}</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <br>
+        <br>
+        <br>
+
+        <div class="col-xs-12">
+            <div class="col-xs-7">
+
+            </div>
+            <div class="col-xs-5" style="font-size: 0.9em">
+                <p class="head-line">Summer-Netto: <span class="pull-right">{{ model.sumNettoBill | currency}}</span></p>
+                <p class="head-line">19%-MwSt.-Betrag: <span class="pull-right">{{ model.vat19Bill | currency }}</span></p>
+                <p class="head-line">7%-MwSt.-Betrag: <span class="pull-right">{{ model.vat7Bill | currency }}</span></p>
+                <hr style="margin-top: 0px;margin-bottom: 0px;">
+                <p class="head-line" style="font-weight: bold">Gesamt: <span class="pull-right">{{ model.sumBruttoBill | currency }}</span></p>
+            </div>
+        </div>
+
+        <div style="width: 18.4cm;position: absolute;bottom: 101px;">
+            <div class="col-xs-6" style="font-size: 0.8em">
+                <p class="head-line">Inhaber: {{ info.owner }}</p>
+                <p class="head-line">Tel: {{ info.mobile }}</p>
+                <p class="head-line">Festnetz/Fax: {{ info.phone }}</p>
+                <p class="head-line">Email: {{ info.email }}</p>
+
+            </div>
+            <div class="col-xs-6" style="font-size: 0.8em">
+                <span class="head-line pull-right">{{ info.bank.name }}</span>
+                <br>
+                <div class="clearfix"></div>
+                <span class="head-line pull-right">IBAN: {{ info.bank.iban }}</span>
+                <br>
+                <div class="clearfix"></div>
+                <span class="head-line pull-right">BIC: {{ info.bank.bic }}</span>
+                <br>
+                <div class="clearfix"></div>
+                <span class="head-line pull-right">Ust-IdNr: {{ info.ustId }}</span>
+            </div>
+        </div>
+
+    </div>
+
+    <button ng-click="print()" class="btn btn-primary">Print</button>
+    <button ng-click="cancel()" class="btn btn-primary">Cancel</button>
+</div>
