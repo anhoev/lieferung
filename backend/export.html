@@ -10,17 +10,18 @@
 
         <hr>
 
-        <div style="width: 80%;min-height: 60px;">
-            <span ng-repeat="item in model.item">
-                <span style="float:left;margin-right: 5px;background-color: #E1ECF4;color: #8835b7;font-size: small;font-weight: 500;padding: 2px;">
-                    {{ item.quantity }} x {{ item.product.name }}
-                </span>
-            </span>
+        <div style="width: 80%;height: 150px;overflow-y: auto">
+            <div ng-repeat="item in model.item">
+                <div style="margin-right: 5px;background-color: #E1ECF4;color: #8835b7;font-size: small;font-weight: 500;padding: 2px;">
+                    {{ item.quantity }} x {{ item.food.name }}
+                </div>
+            </div>
         </div>
 
         <hr>
 
         <button class="btn btn-white btn-xs" style="margin-right: 5px;" ng-click="openLieferschein()">Lieferschein</button>
         <button class="btn btn-white btn-xs" ng-click="openRechnung()">Rechnung</button>
+        <button class="btn btn-white btn-xs" ng-click="printQuitung()">Rechnung ausdrücken</button>
     </div>
 </div>

@@ -1,0 +1,35 @@
+<div class="panel panel-default panel-xs shadow" style="margin-bottom: 10px;">
+    <div class="panel-body" style="padding: 5px;min-height: 120px" ng-class="{'bg-info': false}">
+        <span class="text-primary" style="font-weight: bold" ng-click="formService.edit(record._id, 'EmployeeRecord')">
+            {{model.name}} <span ng-if="model.Id" class="text-muted">({{model.Id}})</span>
+        </span>
+
+        <span class="label label-success pull-right">{{model.position}}</span>
+        <span class="label label-danger pull-right" style="margin-right: 3px;" ng-init="isWorking = fn.isWorking()">{{isWorking}}</span>
+
+        <hr>
+
+        <span class="text-violet">
+                Preis: {{ model.price | currency}} Euro
+        </span>
+
+        <br>
+
+        <span ng-repeat="category in model.category">
+            <span class="text-violet">
+                {{category.name}}
+            </span>
+            &nbsp;&nbsp;
+        </span>
+
+        <br>
+
+        <span ng-repeat="addition in model.addition">
+            <span class="text-violet" style="color: indianred">
+                {{addition.name}}
+            </span>
+            &nbsp;&nbsp;
+        </span>
+
+    </div>
+</div>
