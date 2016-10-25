@@ -1,27 +1,38 @@
 <div class="panel panel-default panel-xs shadow" style="margin-bottom: 10px;">
-    <div class="panel-body" style="padding: 5px;min-height: 90px" ng-class="{'bg-info': false}">
+    <div class="panel-body" style="padding: 5px;" ng-class="{'bg-info': false}">
         <span class="text-primary" style="font-weight: bold" ng-click="" cms-editable-transclude="model.customer">
-            {{model.customer.name}}<span style="font-weight: normal">&nbsp;&nbsp;{{model.date | date:'dd-MM'}}</span>
+            {{model.customer.name}}<span style="font-weight: normal">&nbsp;&nbsp;{{model.date | date:'dd-MM HH:mm'}}</span>
         </span>
+        <button class="btn btn-white btn-xs" ng-click="_show = !_show" style="margin-left: 10px;">Detail</button>
 
-        <span class="label label-primary pull-right">{{model.date | date:'dd-MM'}}</span>
+        <span class="label label-primary pull-right" style="margin-right: 40px;" ng-click="printQuitung()">Rechnung ausdrücken</span>
+        <span class="label label-primary pull-right" style="margin-right: 5px;">{{model.date | date:'dd-MM HH:mm'}}</span>
         <span class="label label-success pull-right" style="margin-right: 5px;">{{ model.status }}</span>
-        <span class="label label-danger pull-right" style="margin-right: 5px;">{{model.sumBrutto | currency}} Euro</span>
+        <span class="label label-success pull-right" style="margin-right: 5px;">{{model.sumBrutto | currency}} Euro</span>
+        <span class="label label-danger pull-right" style="margin-right: 5px;" ng-show="model.showUstId">Bewirtung</span>
 
-        <hr>
+        <div ng-if="_show">
+            <hr >
 
-        <div style="width: 80%;height: 150px;overflow-y: auto">
-            <div ng-repeat="item in model.item">
-                <div style="margin-right: 5px;background-color: #E1ECF4;color: #8835b7;font-size: small;font-weight: 500;padding: 2px;">
-                    {{ item.quantity }} x {{ item.food.name }}
-                </div>
-            </div>
+            <form class="cms-form form-horizontal">
+                <div cms-form-path="item" extend="{link:null}"
+                     type="Export" cms-class="col-xs-12" model="model"></div>
+            </form>
         </div>
 
-        <hr>
+        <div style="display: none">
+            <hr >
 
-        <button class="btn btn-white btn-xs" style="margin-right: 5px;" ng-click="openLieferschein()">Lieferschein</button>
-        <button class="btn btn-white btn-xs" ng-click="openRechnung()">Rechnung</button>
-        <button class="btn btn-white btn-xs" ng-click="printQuitung()">Rechnung ausdrücken</button>
+            <div style="width: 80%;height:150px;overflow-y: auto;">
+                <div ng-repeat="item in model.item">
+                    <div style="margin-right: 5px;background-color: #E1ECF4;color: #8835b7;font-size: small;font-weight: 500;padding: 2px;">
+                        {{ item.quantity }} x {{ item.food.name }}
+                    </div>
+                </div>
+            </div>
+
+            <hr>
+        </div>
+
     </div>
 </div>

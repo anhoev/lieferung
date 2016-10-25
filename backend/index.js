@@ -19,26 +19,4 @@ cms.menu = {
 
 cms.server('backend/en', '');
 
-cms.data.online.wsAddress = 'ws://localhost:8888';
-
-var md5 = require('md5');
-
-var {Iconv}  = require('iconv');
-var iconv = new Iconv('UTF-8','ISO-8859-1');
-var label = iconv.convert('2 1 1 7,2 7,2 7,2 * Groß 7,2');
-
-console.log(md5(label));
-
-const path = require('path');
-var source = path.join(__dirname, 'express.mdb');
-
-var ADODB = require('node-adodb'),
-    connection = ADODB.open(`Provider=Microsoft.Jet.OLEDB.4.0;Data Source=${source};`);
-
-connection
-    .query('SELECT * FROM Bestellung')
-    .on('done', function (data){
-        console.log();
-    })
-    .on('fail', function (data){
-    });
+cms.data.online.wsAddress = 'ws://192.168.1.5:8888';

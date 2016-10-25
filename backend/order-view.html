@@ -1,4 +1,3 @@
-
 <div class="col-xs-5">
     <div class="panel panel-default  panel-xs shadow" style="height: 85vh">
         <div class="panel-body">
@@ -54,7 +53,8 @@
 
                     <div class="clearfix"></div>
                     <div class="col-xs-12">
-                        <button class="cms-btn btn-outline btn btn-default btn-sm" ng-click="saveCustomer()">Speichern</button>
+                        <button class="cms-btn btn-outline btn btn-default btn-sm" ng-click="saveCustomer()">Speichern
+                        </button>
                         <button class="cms-btn btn-outline btn btn-sm btn-danger" ng-click="clear()">Leeren</button>
                     </div>
 
@@ -84,7 +84,17 @@
                 <br>
 
 
-                <div style="font-size: 20px;color: cornflowerblue">{{ data.phone }}</div>
+                <div class="col-xs-12">
+                    <div style="font-size: 20px;color: cornflowerblue">{{ data.phone }}</div>
+
+                    <div class="btn-group btn-group-xs" ng-repeat="customer in data.waitCustomers">
+                        <button type="button" class="btn btn-white" ng-click="_setCustomer(customer,$index)">{{
+                            customer.phone }}
+                        </button>
+                        <button type="button" class="btn btn-white" ng-click="data.waitCustomers.splice($index, 1);"><i
+                                class="fa fa-trash-o"></i></button>
+                    </div>
+                </div>
 
             </div>
         </div>
@@ -102,7 +112,9 @@
             </div>
 
             <div>
-                <h4 class="pull-left" ng-show="data.sum">Summe: {{ data.sum }}, Lieferungskoten: {{ data.export.shippingCost }}</h4>
+                <span class="pull-left text-violet" style="margin-top: 13px;"
+                      ng-show="data.sum">Summe: {{ data.sum }}</span>
+                <span class="pull-left text-violet" style="margin-top: 13px;" ng-show="data.export.shippingCost">Anfahrtskosten: {{ data.export.shippingCost.toFixed(2) }} Euro</span>
                 <div style="padding-top: 10px;margin-right: 17px;" class="pull-right">
                     <button class="cms-btn btn-outline btn btn-sm btn-danger" ng-click="order()">Bestellen</button>
                     <button class="cms-btn btn-outline btn btn-sm btn-danger" ng-click="clear()">Leeren</button>

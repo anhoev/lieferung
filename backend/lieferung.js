@@ -61,10 +61,20 @@ const customerSchema = {
         houseNumber: {
             type: String, label: 'Hausnummer', form: {
                 controller: function ($scope, $http) {
-                    // AIzaSyCPK8riw8dHmkeAzfR0Tysn_hmT71kD_Ak
                     $scope.$watch('model.houseNumber', function (newVal) {
                         if (!$scope.model.streetObj) return;
                         $scope.model.street = `${$scope.model.streetObj.name} ${newVal}`;
+                        if (!$scope.model.zipcode) {
+                            $http.get(`https://maps.googleapis.com/maps/api/geocode/json?address=${$scope.model.street},${$scope.model.city}&key=AIzaSyCMkI_vyp8ZJTW1-udo7dUR0-R180zWwms`).then(function ({data}) {
+                                const zipcode = _.find(data.results[0].address_components, function (c) {
+                                    try {
+                                        if (c.types[0] === "postal_code") return true;
+                                    } catch (e) {
+                                    }
+                                })
+                                if (zipcode) $scope.model.zipcode = zipcode.long_name;
+                            })
+                        }
                     })
                 }
             }
@@ -312,11 +322,10 @@ const Export = cms.registerSchema({
     date: {
         type: Date, default: Date.now(), label: 'Tag',
         query: {
-            default: new Date(),
-            form: {type: 'input', templateOptions: {type: 'month', label: 'Monate'}},
-            fn: month => ({
-                $gte: moment(month).clone().startOf('month').toDate(),
-                $lte: moment(month).clone().endOf('month').toDate()
+            form: {type: 'input', defaultValue: new Date(), templateOptions: {type: 'date', label: 'Tag'}},
+            fn: date => ({
+                $gte: moment(date).clone().startOf('day').toDate(),
+                $lte: moment(date).clone().endOf('day').toDate()
             })
         }
     },
@@ -410,9 +419,9 @@ const Export = cms.registerSchema({
         {title: 'detail', fields: ['item']}
     ],
     info: {
-        elementClass: 'col-sm-6',
+        elementClass: 'col-sm-12',
         editorIcon: {
-            top: '49px',
+            top: '14px',
             right: '-14px'
         }
     },
@@ -441,13 +450,21 @@ const Export = cms.registerSchema({
                     printer.newLine();
                     printer.newLine();
                     printer.println('KD');
+                } else {
+                    printer.setTextDoubleWidth();
                 }
 
                 printer.println(_export.customer.name);
-                printer.println(_export.customer.address.street);
-                printer.println(`Etage: ${_export.customer.address.floor}`);
+                if (_export.customer.address.name && _export.customer.address.name !== _export.customer.name) printer.println(_export.customer.address.name);
+                printer.print('   ' + _export.customer.address.street);
+                if (_export.customer.address.houseNumber) {
+                    printer._println(' ' + _export.customer.address.houseNumber);
+                } else {
+                    printer.newLine();
+                }
+                if (_export.customer.address.floor) printer.println(`Etage: ${_export.customer.address.floor}`);
                 printer.println(`${_export.customer.address.zipcode} ${_export.customer.address.city}`);
-                printer.println(`Telefon: ${_export.customer.phone}`);
+                if (_export.customer.phone) printer.println(`Telefon: ${_export.customer.phone}`);
                 printer.newLine();
                 printer.newLine();
                 printer.newLine();
@@ -472,18 +489,25 @@ const Export = cms.registerSchema({
                     printer.alignLeft();
                 } else {
                     printer.println(`Rechnung Nr : ${_export.Id}`);
+                    printer.newLine();
                 }
+
 
                 for (const item of _export.item) {
                     if (!forKitchen) {
                         printer.tableCustom([                               // Prints table with custom settings (text, align, width, bold)
-                            {text: `${item.quantity} x ${item.food.name}`, align: "LEFT", width: 0.85},
-                            {text: (item.quantity * item.price).toFixed(2), align: "LEFT", width: 0.15}
+                            {
+                                text: `${item.quantity} x ${item.food.name} (${item.food.Id})`,
+                                align: "LEFT",
+                                width: 0.85
+                            },
+                            {text: `  ${(item.quantity * item.price).toFixed(2)}`, align: "LEFT", width: 0.15}
                         ]);
 
                     } else {
 
-                        printer._println(`${item.quantity} x ${item.food.name}`)
+                        printer._println(`  ${item.quantity} x [${item.food.Id}]`);
+                        printer._println(`  ${item.food.name}`);
                         printer.newLine();
                     }
                 }
@@ -498,6 +522,11 @@ const Export = cms.registerSchema({
 
                     printer.println(`Entsprich = ${_export.sumBrutto.toFixed(2)} EUR`);
                     printer.newLine();
+
+                    if (_export.shippingCost && _export.shippingCost > 0) {
+                        printer.println(`Anfahrtkosten: ${_export.shippingCost.toFixed(2)} EUR`);
+                        printer.newLine();
+                    }
 
                     printer.println(`MwSt 07,00% = ${_export.vat7.toFixed(2)} EUR`);
                     printer.println(`MwSt 19,00% = 0,00 EUR`);
@@ -615,13 +644,67 @@ const Export = cms.registerSchema({
     }
 });
 
+const Report = cms.registerSchema({
+    name: {type: String}
+}, {
+    name: 'Report',
+    label: 'Kassenbericht',
+    formatterUrl: 'backend/report.html',
+    title: 'name',
+    isViewElement: false,
+    autopopulate: true,
+    alwaysLoad: true,
+    controller: function (cms, $scope, $timeout) {
+        $scope.data = {
+            date: new Date()
+        }
+        $scope.$watch('data.date', function (n, o) {
+            if (n) {
+                cms.execServerFn('Report', $scope.model, 'queryExport', $scope.data.date).then(function ({data}) {
+                    $scope.data.list = [];
+                    $timeout(function () {
+                        $scope.data.list.push(...data.exports);
+                        $scope.data.sum = data.sum;
+                    })
+                })
+            }
+        }, true);
+    },
+    serverFn: {
+        queryExport: function *(date) {
+            const exports = yield Export.find({
+                date: {
+                    $gte: moment(date).startOf('day').toDate(),
+                    $lte: moment(date).endOf('day').toDate()
+                },
+                fromInternet: {
+                    $ne: true
+                },
+                showUstId: {
+                    $ne: true
+                }
+            });
+            return {
+                sum: 20,
+                exports
+            };
+        }
+    }
+});
+
 cms.app.get('/api/exportId', function*(req, res) {
-    const result = yield Export.aggregate().group({
+
+    const result = yield Export.aggregate().match({
+        date: {
+            $gte: moment().startOf('day').toDate(),
+            $lte: moment().endOf('day').toDate()
+        }
+    }).group({
         _id: "",
         maxID: {$max: "$Id"}
     }).exec();
 
-    var maxID = result[0] ? result[0].maxID : 1000;
+    var maxID = result[0] ? result[0].maxID : 0;
     res.send({maxId: maxID + 1});
 })
 
@@ -647,7 +730,10 @@ const OrderView = cms.registerSchema({
     alwaysLoad: true,
     controller: function ($scope, cms, formService, $timeout, $http) {
         $('#left-panel').css('height', $('#left-panel').height() + 'px');
-        $scope.data = {};
+        $scope.data = {
+            waitCustomers: [],
+            free: true
+        };
 
         $scope.clear = function () {
             $scope.data.phone = '';
@@ -668,6 +754,10 @@ const OrderView = cms.registerSchema({
             $http.get('api/exportId').then(function ({data}) {
                 $scope.data.export.Id = data.maxId;
             });
+
+            $timeout(function () {
+                $scope.data.free = true;
+            }, 200);
         }
 
         $scope.$watch('data.export.customer', function (customer) {
@@ -676,18 +766,48 @@ const OrderView = cms.registerSchema({
 
         $scope.clear();
 
-        $scope.newCustomer = function () {
+        $scope.newCustomer = function (cb) {
             cms.createElement('Customer', $scope.data.customer, function (model) {
                 $timeout(function () {
                     $scope.data.export.customer = $scope.data.customer = _.find(cms.types.Customer.list, {_id: model._id});
-                    window._focus();
+                    if (cb) cb();
+                    if (!cb) window._focus();
                 }, 100)
             }, false);
         }
 
-        $scope.$watch(['data.customer.fromInternet', 'data.customer.showUstId'], function (newVal, oldVal) {
-            if (newVal !== oldVal && $scope.data.customer._id) $scope.saveCustomer(false);
+        const cArr = ['data.customer.fromInternet', 'data.customer.showUstId', 'data.customer.address', 'data.customer.name', 'data.customer.phone', 'data.customer.note'];
+        for (const p of cArr) {
+            $scope.$watch(p, function (newVal, oldVal) {
+                if (newVal) $scope.data.free = false;
+                if (oldVal && oldVal.city && !oldVal.street) return;
+                if (oldVal != undefined && !angular.equals(newVal, oldVal) && $scope.data.customer && $scope.data.customer._id) {
+                    $scope.saveCustomer(false);
+                }
+            }, true);
+        }
+
+        $scope.$watch('data.customer.address.zipcode', function (newVal, oldVal) {
+            if (newVal) {
+                try {
+                    $timeout(function () {
+                        $scope.data.export.shippingCost = $scope.shippingCostCalculate(newVal);
+                    })
+                } catch (e) {
+                }
+            }
         })
+
+        $scope.$watch('data.export.item', function (newVal, oldVal) {
+            if (newVal && newVal.length > 0) {
+                const items = $scope.data.export.item;
+                $scope.data.sum = _.reduce(items, (sum, item) => {
+                    if (item.quantity && item.price)
+                        sum += item.quantity * item.price;
+                    return sum;
+                }, 0)
+            }
+        }, true);
 
         $scope.saveCustomer = function (notify = true) {
             if (!$scope.data.customer._id) {
@@ -696,10 +816,10 @@ const OrderView = cms.registerSchema({
             }
             delete $scope.data.customer.$order;
             cms.updateElement('Customer', $scope.data.customer, function (model) {
-                if (notify) confirm('Speichern erfolgreich!')
+                // if (notify) confirm('Speichern erfolgreich!');
                 // $scope.clear();
                 $timeout(function () {
-                    $scope.data.export.customer = $scope.data.customer = _.find(cms.types.Customer.list, {_id: model._id});
+                    if (notify) $scope.data.export.customer = $scope.data.customer = _.find(cms.types.Customer.list, {_id: model._id});
                 }, 100)
             });
         }
@@ -713,10 +833,21 @@ const OrderView = cms.registerSchema({
             if ($scope.data.customer.fromInternet) $scope.data.export.fromInternet = true;
             if ($scope.data.customer.showUstId) $scope.data.export.showUstId = true;
             $scope.data.export.item = _.filter($scope.data.export.item, item => item.food);
-            cms.createElement('Export', $scope.data.export, function (_export) {
-                cms.execServerFn('Export', _export, 'printQuitung');
-                $scope.clear();
-            }, false)
+            function _order() {
+                cms.createElement('Export', $scope.data.export, function (_export) {
+                    cms.execServerFn('Export', _export, 'printQuitung');
+                    $scope.clear();
+                }, false)
+            }
+
+            if (!$scope.data.customer._id) {
+                $scope.newCustomer(function () {
+                    _order();
+                })
+            } else {
+                _order();
+            }
+
         }
 
         $scope.orderFromInternet = function () {
@@ -724,16 +855,75 @@ const OrderView = cms.registerSchema({
             $scope.order();
         }
 
-        cms.socket.on('message', event => {
-            const _data = JsonFn.parse(event, true);
-            if (_data.path !== 'phone') return;
-            var customer = _data.customer;
-            if (customer) {
+        $scope.shippingCostCalculate = function (zipcode) {
+            const free = [
+                22393,
+                22159, 22393,
+                22393,
+                22047, 22159, 22175, 22177, 22179, 22309, 22393,
+                22145, 22159,
+                22177, 22309,
+                22297, 22303, 22305, 22307, 22309,
+                22081, 22083, 22085, 22305,
+                22041, 22043, 22045, 22047, 22159,
+                22143, 22145, 22147
+            ];
+
+            const cost1 = [
+                22399, 22149, 22337
+            ]
+
+            const cost15 = [
+                22339, 22391, 22415, 22417,
+                22397,
+                22359, 22395
+            ]
+
+            if (_.includes(free, parseInt(zipcode))) return 0;
+            if (_.includes(cost1, parseInt(zipcode))) return 1;
+            if (_.includes(cost15, parseInt(zipcode))) return 1.5;
+            return 2;
+        }
+
+        $scope.setCustomer = function (customer) {
+            if (!$scope.data.free) return;
+            if (customer._id) {
                 $scope.data.export.customer = customer;
                 $scope.data.customer = $scope.data.export.customer;
                 window._focus();
             } else {
-                $scope.data.customer.phone = _data.phone;
+                $scope.data.customer.phone = customer.phone;
+            }
+        }
+
+        $scope._setCustomer = function (customer, $index) {
+            $scope.setCustomer(customer);
+            if ($scope.data.free) {
+                $scope.data.waitCustomers.splice($index, 1);
+            }
+        }
+
+        cms.socket.on('message', event => {
+            const _data = JsonFn.parse(event, true);
+            if (_data.path !== 'phone') return;
+            var customer = _data.customer;
+
+            if (customer) {
+                if ($scope.data.free) {
+                    $scope.setCustomer(customer);
+                } else {
+                    $scope.data.waitCustomers.push(customer);
+                }
+            } else {
+                if ($scope.data.free) {
+                    $scope.setCustomer({
+                        phone: _data.phone
+                    });
+                } else {
+                    $scope.data.waitCustomers.push({
+                        phone: _data.phone
+                    });
+                }
             }
             $scope.data.phone = _data.phone;
 
@@ -743,8 +933,8 @@ const OrderView = cms.registerSchema({
 
     },
     serverFn: {}
-
 });
+
 
 const Street = cms.registerSchema({
         name: {type: String},
@@ -767,41 +957,41 @@ const Street = cms.registerSchema({
 );
 
 /*q.spawn(function*() {
-    yield Street.find({}).remove().exec();
-    const content = JsonFn.parse(fs.readFileSync(`backend/hamburg.json`, 'utf8'));
-    let i = 0;
-    for (const element of content.elements) {
-        const {tags, id} = element;
-        const street = {
-            name: tags.name,
-            zipcode: tags.postal_code,
-            _id: new Street()._id
-        };
+ yield Street.find({}).remove().exec();
+ const content = JsonFn.parse(fs.readFileSync(`backend/hamburg.json`, 'utf8'));
+ let i = 0;
+ for (const element of content.elements) {
+ const {tags, id} = element;
+ const street = {
+ name: tags.name,
+ zipcode: tags.postal_code,
+ _id: new Street()._id
+ };
 
-        const _street = yield Street.findOne({name: tags.name});
-        let save = true;
-        if (_street && !_street.zipcode && street.zipcode) {
-            street._id = _street._id
-        } else if (_street && _street.zipcode && !street.zipcode) {
-            save = false;
-        } else if (_street && !_street.zipcode && !street.zipcode) {
-            save = false;
-        } else if (_street && _street.zipcode && street.zipcode && _street.zipcode === street.zipcode) {
-            save = false;
-        }
+ const _street = yield Street.findOne({name: tags.name});
+ let save = true;
+ if (_street && !_street.zipcode && street.zipcode) {
+ street._id = _street._id
+ } else if (_street && _street.zipcode && !street.zipcode) {
+ save = false;
+ } else if (_street && !_street.zipcode && !street.zipcode) {
+ save = false;
+ } else if (_street && _street.zipcode && street.zipcode && _street.zipcode === street.zipcode) {
+ save = false;
+ }
 
-        // if (tags.name === 'Horner Weg') debugger
+ // if (tags.name === 'Horner Weg') debugger
 
-        if (save) {
-            yield Street.findOneAndUpdate({_id: street._id}, street, {
-                upsert: true,
-                setDefaultsOnInsert: true
-            }).exec();
-        }
+ if (save) {
+ yield Street.findOneAndUpdate({_id: street._id}, street, {
+ upsert: true,
+ setDefaultsOnInsert: true
+ }).exec();
+ }
 
-    }
-    debugger
-})*/
+ }
+ debugger
+ })*/
 
 /*q.spawn(function*() {
  const content = fs.readFileSync(`backend/k8.txt`, 'utf8');
@@ -913,4 +1103,3 @@ function print() {
     });
     printer.clear();
 }
-

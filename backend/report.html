@@ -1,0 +1,20 @@
+<form class="cms-form form-horizontal">
+    <div cms-form-path="date" extend="{templateOptions:{type:'date'}}"
+         type="Export" cms-class="col-xs-6" model="data"></div>
+</form>
+
+<div class="clearfix"></div>
+
+<div class="col-xs-12">
+
+    <span class="text-violet">Summe: {{ data.sum }} Euro</span>
+
+    <button class="btn btn-white btn-xs">Kassenbericht ausdrücken</button>
+
+    <br><br>
+
+    <div ng-repeat="element in data.list track by $index"
+         ng-class="elementClass"
+         cms-element="{ref: element._id, type: 'Export'}"
+         inline="false"></div>
+</div>
