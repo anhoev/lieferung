@@ -684,8 +684,14 @@ const Report = cms.registerSchema({
                     $ne: true
                 }
             });
+
+            const sum = _.reduce(exports, (sum, _export) => {
+                sum += _export.sumBrutto;
+                return sum;
+            }, 0);
+
             return {
-                sum: 20,
+                sum,
                 exports
             };
         }
