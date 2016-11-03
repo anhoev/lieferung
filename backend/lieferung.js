@@ -1059,8 +1059,8 @@ var SerialPort = require('serialport');
 
 SerialPort.list(function (err, ports) {
     ports.forEach(function (port) {
-        if ((/usbmodem/i).test(port.comName)) {
-            var sp = new SerialPort('/dev/tty.usbmodem12345671', {
+        if ((/COM3/i).test(port.comName)) {
+            var sp = new SerialPort('COM3', {
                 parser: SerialPort.parsers.readline("\n")
             });
 
@@ -1098,7 +1098,7 @@ SerialPort.list(function (err, ports) {
 function print() {
     Print.printDirect({
         data: printer.getBuffer() // or simple String: "some text"
-        , printer: 'EPSON_TM_T20II'
+        , printer: 'EPSON TM-T20II Receipt'
         , type: 'RAW' // type: RAW, TEXT, PDF, JPEG, .. depends on platform
         , success: function (jobID) {
             console.log("sent to printer with ID: " + jobID);

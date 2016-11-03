@@ -24,6 +24,8 @@
     "iconv": "^2.2.1",
     "md5": "^2.2.1",
     "moment-timezone": "^0.5.5",
+    "node-thermal-printer": "^1.0.3",
+    "printer": "^0.2.2",
     "q": "^1.4.1",
     "serialport": "^4.0.3",
     "serialport2": "0.0.5",

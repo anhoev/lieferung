@@ -6,6 +6,16 @@ cms.listen(8888);
 cms.resolvePath = (p) => `backend/${p}`;
 cms.mongoose.connect('mongodb://localhost/lieferung');
 cms.data.webtype = cms.Enum.WebType.APPLICATION;
+const path = require('path');
+
+if (process.cwd().indexOf('lieferung') === -1) {
+    try {
+        process.chdir(path.resolve(__dirname, '../'));
+        console.log('New directory: ' + process.cwd());
+    } catch (err) {
+    }
+}
+
 
 cms.use(require('cmsmon/mobile'));
 require('./lieferung');
@@ -19,4 +29,4 @@ cms.menu = {
 
 cms.server('backend/en', '');
 
-cms.data.online.wsAddress = 'ws://192.168.1.5:8888';
+cms.data.online.wsAddress = 'ws://localhost:8888';
