@@ -1,7 +1,7 @@
 <div class="panel panel-default panel-xs shadow" style="margin-bottom: 10px;">
     <div class="panel-body" style="padding: 5px;" ng-class="{'bg-info': false}">
-        <span class="text-primary" style="font-weight: bold" ng-click="" cms-editable-transclude="model.customer">
-            {{model.customer.name}}<span style="font-weight: normal">&nbsp;&nbsp;{{model.date | date:'dd-MM HH:mm'}}</span>
+        <span class="text-primary" style="font-weight: bold" ng-click="" cms-editable-transclude="model.Nr">
+            {{model.Nr}}<span style="font-weight: normal">&nbsp;&nbsp;{{model.date | date:'dd-MM HH:mm'}}</span>
         </span>
         <button class="btn btn-white btn-xs" ng-click="_show = !_show" style="margin-left: 10px;">Detail</button>
 
@@ -18,6 +18,11 @@
                 <div cms-form-path="item" extend="{link:null}"
                      type="Export" cms-class="col-xs-12" model="model"></div>
             </form>
+
+            <br>
+
+            <button class="cms-btn btn-outline btn btn-success btn-xs" ng-click="save()">Speichern</button>
+            <span class="label label-success label-xs" ng-show="saved">Erfolgreich</span>
         </div>
 
         <div style="display: none">

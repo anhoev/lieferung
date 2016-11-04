@@ -1,20 +1,81 @@
+<div>
+    <button class="cms-btn btn-outline btn btn-success btn-xs" ng-click="importAuftrag()">Import</button>
+    <button class="cms-btn btn-outline btn btn-success btn-xs" ng-click="exportAuftrag()">Speichern</button>
+</div>
+
 <form class="cms-form form-horizontal">
     <div cms-form-path="date" extend="{templateOptions:{type:'date'}}"
          type="Export" cms-class="col-xs-6" model="data"></div>
+
+    <div class="form-group col-xs-6">
+        <label class="control-label">Targetsumsatz</label>
+        <input type="number" class="form-control">
+    </div>
+
+    <div class="col-xs-12">
+        <input placeholder="Rechnung Nr" class="form-control" ng-model="data.nrs">
+    </div>
+
 </form>
 
 <div class="clearfix"></div>
+<br>
 
 <div class="col-xs-12">
 
-    <span class="text-violet">Summe: {{ data.sum }} Euro</span>
+    <span class="text-violet">Summe: {{ data.sum | currency}} Euro</span>
 
     <button class="btn btn-white btn-xs">Kassenbericht ausdrücken</button>
 
+    <span class="label label-success label-xs" ng-show="saved">Speichern erfolgreich</span>
+
     <br><br>
 
-    <div ng-repeat="element in data.list track by $index"
-         ng-class="elementClass"
-         cms-element="{ref: element._id, type: 'Export'}"
-         inline="false"></div>
+    <div ng-repeat="element in data.list | filter: filterFn"
+         ng-class="elementClass">
+        <div class="panel panel-default panel-xs shadow" style="margin-bottom: 10px;">
+            <div class="panel-body" style="padding: 5px;" ng-class="{'bg-info': false}">
+        <span class="text-primary" style="font-weight: bold" ng-click="">
+            {{element.Nr}}<span style="font-weight: normal">&nbsp;&nbsp;{{element.date | date:'dd-MM HH:mm'}}</span>
+        </span>
+                <button class="btn btn-white btn-xs" ng-click="_show = !_show" style="margin-left: 10px;">Detail</button>
+
+                <span class="label label-danger pull-right" style="margin-right: 10px;cursor: pointer;" ng-click="data.list.splice($index,1); delete(element)">Löschen</span>
+                <span class="label label-primary pull-right" style="margin-right: 10px;" ng-click="printQuitung()">Rechnung ausdrücken</span>
+                <span class="label label-primary pull-right" style="margin-right: 5px;">{{element.date | date:'dd-MM HH:mm'}}</span>
+                <span class="label label-success pull-right" style="margin-right: 5px;">{{ element.status }}</span>
+                <span class="label label-success pull-right" style="margin-right: 5px;">{{element.sumBrutto | currency}} Euro</span>
+                <span class="label label-danger pull-right" style="margin-right: 5px;" ng-show="element.showUstId">Bewirtung</span>
+
+                <div ng-if="_show">
+                    <hr >
+
+                    <form class="cms-form form-horizontal">
+                        <div ng-repeat="item in element.item">
+                            <div class="row" style="margin-top: 10px;">
+                                <div class="col-xs-6" style="padding-top: 6px;">
+                                    <span class="text-violet" style="background-color: transparent;color: #555">{{item.food.name}} ({{item.price | currency}})</span>
+                                </div>
+                                <div class="col-xs-2">
+                                    <input class="form-control" type="number" ng-model="item.quantity">
+                                </div>
+                                <div class="col-xs-2">
+                                    <input class="form-control" type="text"  ng-model="item.modifiedQuantity">
+                                </div>
+                                <div class="col-xs-2">
+                                    <button class="btn btn-white btn-sm" ng-click="element.item.splice($index, 1)">Löschen</button>
+                                </div>
+                            </div>
+                        </div>
+
+                    </form>
+
+                    <br>
+
+                    <button class="cms-btn btn-outline btn btn-success btn-xs" ng-click="save(element)">Speichern</button>
+                </div>
+
+            </div>
+        </div>
+    </div>
 </div>
