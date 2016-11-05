@@ -154,18 +154,6 @@ const Category = cms.registerSchema({
     alwaysLoad: true
 });
 
-const Source = cms.registerSchema({
-    name: {type: String}
-}, {
-    name: 'Source',
-    label: 'Quelle',
-    formatter: `<h4>{{model.name}}</h4>`,
-    title: 'name',
-    isViewElement: false,
-    autopopulate: true,
-    alwaysLoad: true
-});
-
 const Food = cms.registerSchema({
     name: {type: String},
     Id: {
@@ -192,13 +180,10 @@ const Food = cms.registerSchema({
         }
     },
     price: {type: Number, label: 'Preis'},
+    tax: {type: String, form: makeSelect('19%', '7%'), label: 'Steuer'},
     category: {
         type: [{type: mongoose.Schema.Types.ObjectId, ref: 'Category', autopopulate: {select: 'name _id'}}],
         label: 'Kategorie'
-    },
-    addition: {
-        type: [{type: mongoose.Schema.Types.ObjectId, ref: 'Addition', autopopulate: true}],
-        label: 'Zusatzbelag'
     },
     picture: {
         type: String, form: {
@@ -259,26 +244,6 @@ cms.app.get('/api/foodId', function*(req, res) {
 
     res.send({ids});
 })
-
-const Addition = cms.registerSchema({
-    name: {type: String},
-    price: Number,
-}, {
-    name: 'Addition',
-    label: 'Zusatzbelag',
-    formatter: `
-            <h4>{{model.name}}</h4>
-        `,
-    title: 'name',
-    isViewElement: false,
-    autopopulate: true,
-    alwaysLoad: true,
-    tabs: [
-        {title: 'basic'},
-        {title: 'detail', fields: ['parent']}
-    ]
-});
-
 
 const PersonalInformation = cms.registerSchema(_.assign(customerSchema, {
     owner: {type: String, label: 'Inhaber'},
@@ -355,7 +320,7 @@ const Export = cms.registerSchema({
             food: {
                 type: mongoose.Schema.Types.ObjectId,
                 ref: 'Food',
-                autopopulate: {select: 'Id name price'},
+                autopopulate: {select: 'Id name price tax'},
                 label: 'Speise',
                 form: {
                     controller: function ($scope, $timeout) {
@@ -533,7 +498,7 @@ const Export = cms.registerSchema({
 
                     printer.newLine();
 
-                    if (_export.customer.showUstId) {
+                    if (_export.showUstId) {
                         printer.newLine();
                         printer.println(`StNr: ${info.ustId}`);
                         printer.println(`Anlass der Bewirtung:`);
@@ -575,6 +540,20 @@ const Export = cms.registerSchema({
         schema.virtual('sumBrutto').get(function () {
             return _.reduce(this.item, (sum, item) => {
                 sum += item.quantity * item.price;
+                return sum;
+            }, 0);
+        })
+
+        schema.virtual('sum7Brutto').get(function () {
+            return _.reduce(this.item, (sum, item) => {
+                if (item.food.tax === '7%') sum += item.quantity * item.price;
+                return sum;
+            }, 0);
+        })
+
+        schema.virtual('sum19Brutto').get(function () {
+            return _.reduce(this.item, (sum, item) => {
+                if (item.food.tax === '19%') sum += item.quantity * item.price;
                 return sum;
             }, 0);
         })
@@ -687,6 +666,19 @@ const Report = cms.registerSchema({
         $scope.delete = function (_export) {
             cms.removeElement('Export', _export._id, () => $scope.refresh());
         }
+
+        $scope.print = function (date) {
+            cms.execServerFn('Report', $scope.model, 'print', date);
+        }
+
+        $scope.printQuitung = function (_export) {
+            cms.execServerFn('Export', _export, 'printQuitung');
+        }
+
+        $scope.changeBewirtung = function (_export) {
+            _export.showUstId = !_export.showUstId;
+            $scope.save(_export);
+        }
     },
     serverFn: {
         queryExport: function *(date) {
@@ -728,9 +720,14 @@ const Report = cms.registerSchema({
                 }
             });
 
-            const sum7 = _.reduce(exports, (sum, _export) => sum + _export.sumBrutto, 0);
-            const sum7Bar = _.reduce(_.filter(exports, {paymentOption: 'Barverkauf'}), (sum, _export) => sum + _export.sumBrutto, 0);
+            const sum7 = _.reduce(exports, (sum, _export) => sum + _export.sum7Brutto, 0);
+            const sum19 = _.reduce(exports, (sum, _export) => sum + _export.sum19Brutto, 0);
+
+            const sum7Bar = _.reduce(_.filter(exports, {paymentOption: 'Barverkauf'}), (sum, _export) => sum + _export.sum7Brutto, 0);
             const sum7Kredit = sum7 - sum7Bar;
+
+            const sum19Bar = _.reduce(_.filter(exports, {paymentOption: 'Barverkauf'}), (sum, _export) => sum + _export.sum19Brutto, 0);
+            const sum19Kredit = sum19 - sum19Bar;
 
             printer.bold(true);
             printer.println('KASSENBERICHT (LIEFERSERVICE)');
@@ -741,19 +738,19 @@ const Report = cms.registerSchema({
             printer.drawLine();
 
             printer.newLine();
-            printer.println('Einnahme 7,0 %');
+            printer.println('Einnahme 7,0 % (Außer Haus/Speisen)');
             printer.println(`Summe = ${sum7.toFixed(2)} Euro`);
             printer.newLine();
 
             printer.newLine();
-            printer.println('Einnahme 19,0 %');
-            printer.println(`Summe = 0,00 Euro`);
+            printer.println('Einnahme 19,0 %  (Außer Haus/Getränk)');
+            printer.println(`Summe = ${sum19.toFixed(2)} Euro`);
             printer.newLine();
 
             printer.drawLine();
-            printer.println(`TOTAL = ${sum7.toFixed(2)} Euro`);
+            printer.println(`TOTAL = ${(sum7 + sum19).toFixed(2)} Euro`);
 
-            printer.println('BAREINNAHME');
+            printer.newLine();
 
             printer.tableCustom([
                 {text: `   MWST`, align: "LEFT", width: 0.25},
@@ -764,48 +761,25 @@ const Report = cms.registerSchema({
 
             printer.tableCustom([
                 {text: `   7%`, align: "LEFT", width: 0.25},
-                {text: `${(sum7Bar * 0.07).toFixed(2)}`, align: "LEFT", width: 0.25},
-                {text: `${(sum7Bar * 0.93).toFixed(2)}`, align: "LEFT", width: 0.25},
-                {text: `${sum7Bar.toFixed(2)}`, align: "LEFT", width: 0.25}
+                {text: `${(sum7 * 0.07).toFixed(2)}`, align: "LEFT", width: 0.25},
+                {text: `${(sum7 * 0.93).toFixed(2)}`, align: "LEFT", width: 0.25},
+                {text: `${sum7.toFixed(2)}`, align: "LEFT", width: 0.25}
             ]);
 
             printer.tableCustom([
                 {text: `   19%`, align: "LEFT", width: 0.25},
-                {text: `0,00`, align: "LEFT", width: 0.25},
-                {text: `0,00`, align: "LEFT", width: 0.25},
-                {text: `0,00`, align: "LEFT", width: 0.25}
+                {text: `${(sum19 * 0.07).toFixed(2)}`, align: "LEFT", width: 0.25},
+                {text: `${(sum19 * 0.93).toFixed(2)}`, align: "LEFT", width: 0.25},
+                {text: `${sum19.toFixed(2)}`, align: "LEFT", width: 0.25}
             ]);
 
             printer.newLine();
 
-            printer.println('KREDITZAHLUNGEN (UNBAR)');
-
-            printer.tableCustom([
-                {text: `   MWST`, align: "LEFT", width: 0.25},
-                {text: `Wert`, align: "LEFT", width: 0.25},
-                {text: `Netto`, align: "LEFT", width: 0.25},
-                {text: `Brutto`, align: "LEFT", width: 0.25}
-            ]);
-
-            printer.tableCustom([
-                {text: `   7%`, align: "LEFT", width: 0.25},
-                {text: `${(sum7Kredit * 0.07).toFixed(2)}`, align: "LEFT", width: 0.25},
-                {text: `${(sum7Kredit * 0.93).toFixed(2)}`, align: "LEFT", width: 0.25},
-                {text: `${sum7Kredit.toFixed(2)}`, align: "LEFT", width: 0.25}
-            ]);
-
-            printer.tableCustom([
-                {text: `   19%`, align: "LEFT", width: 0.25},
-                {text: `0,00`, align: "LEFT", width: 0.25},
-                {text: `0,00`, align: "LEFT", width: 0.25},
-                {text: `0,00`, align: "LEFT", width: 0.25}
-            ]);
-
             printer.newLine();
 
-            printer.leftRight(' ', `Summe Netto = ${(sum7 * 0.93).toFixed(2)}`);
-            printer.leftRight(' ', `Summe MwSt = ${(sum7 * 0.07).toFixed(2)}`);
-            printer.leftRight(' ', `Summe Brutto = ${sum7.toFixed(2)}`);
+            printer.leftRight(' ', `Summe Netto = ${((sum7 + sum19) * 0.93).toFixed(2)}`);
+            printer.leftRight(' ', `Summe MwSt = ${((sum7 + sum19) * 0.07).toFixed(2)}`);
+            printer.leftRight(' ', `Summe Brutto = ${(sum7 + sum19).toFixed(2)}`);
 
             printer.cut();
             print();

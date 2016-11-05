@@ -19,6 +19,7 @@ if (process.cwd().indexOf('lieferung') === -1) {
 
 cms.use(require('cmsmon/mobile'));
 require('./lieferung');
+//require('./steuer');
 
 // cms.data.online.autoOpenAdmin = true;
 
