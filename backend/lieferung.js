@@ -331,7 +331,7 @@ const Export = cms.registerSchema({
     },
     shipDate: {type: Date, default: Date.now(), label: 'Lieferdatum'},
     Id: {type: Number, label: 'Rechnung Nummer', form: idFormExport},
-    paymentOption: {type: String, form: makeSelect('EC', 'Barverkauf', 'Überweisung'), label: 'Zahlungsmethod'},
+    paymentOption: {type: String, form: makeSelect('Unbar', 'Barverkauf'), label: 'Zahlungsmethod'},
     status: {type: String, form: makeSelect('BestellungErhalten', 'Bezahlt', 'Geliefert'), label: 'Zustand'},
     //provider: {type: mongoose.Schema.Types.ObjectId, ref: 'Provider', autopopulate: true},
     note: {type: String, label: 'Notiz'},
@@ -658,17 +658,35 @@ const Report = cms.registerSchema({
         $scope.data = {
             date: new Date()
         }
-        $scope.$watch('data.date', function (n, o) {
-            if (n) {
-                cms.execServerFn('Report', $scope.model, 'queryExport', $scope.data.date).then(function ({data}) {
-                    $scope.data.list = [];
-                    $timeout(function () {
-                        $scope.data.list.push(...data.exports);
-                        $scope.data.sum = data.sum;
-                    })
+
+        $scope.refresh = function () {
+            cms.execServerFn('Report', $scope.model, 'queryExport', $scope.data.date).then(function ({data}) {
+                $scope.data.list = [];
+                $timeout(function () {
+                    $scope.data.list.push(...data.exports);
+                    $scope.data.sum = data.sum;
                 })
-            }
+            })
+        }
+
+        $scope.$watch('data.date', function (n, o) {
+            if (n) $scope.refresh();
         }, true);
+
+        $scope.save = function (_export) {
+            cms.updateElement('Export', _export, function (_model) {
+                $timeout(function () {
+                    $scope.saved = true;
+                    $timeout(function () {
+                        $scope.saved = false;
+                    }, 2000);
+                })
+            })
+        }
+
+        $scope.delete = function (_export) {
+            cms.removeElement('Export', _export._id, () => $scope.refresh());
+        }
     },
     serverFn: {
         queryExport: function *(date) {
@@ -685,7 +703,14 @@ const Report = cms.registerSchema({
                 }
             });
 
-            const sum = _.reduce(exports, (sum, _export) => {
+            const exportsAll = yield Export.find({
+                date: {
+                    $gte: moment(date).startOf('day').toDate(),
+                    $lte: moment(date).endOf('day').toDate()
+                }
+            });
+
+            const sum = _.reduce(exportsAll, (sum, _export) => {
                 sum += _export.sumBrutto;
                 return sum;
             }, 0);
@@ -694,6 +719,96 @@ const Report = cms.registerSchema({
                 sum,
                 exports
             };
+        },
+        print: function *(date) {
+            const exports = yield Export.find({
+                date: {
+                    $gte: moment(date).startOf('day').toDate(),
+                    $lte: moment(date).endOf('day').toDate()
+                }
+            });
+
+            const sum7 = _.reduce(exports, (sum, _export) => sum + _export.sumBrutto, 0);
+            const sum7Bar = _.reduce(_.filter(exports, {paymentOption: 'Barverkauf'}), (sum, _export) => sum + _export.sumBrutto, 0);
+            const sum7Kredit = sum7 - sum7Bar;
+
+            printer.bold(true);
+            printer.println('KASSENBERICHT (LIEFERSERVICE)');
+            printer.bold(false);
+            printer.println(`für ${moment(date).format('DD.MM.YYYY')}`);
+            printer.newLine();
+            printer.println('Vorgang / Summe');
+            printer.drawLine();
+
+            printer.newLine();
+            printer.println('Einnahme 7,0 %');
+            printer.println(`Summe = ${sum7.toFixed(2)} Euro`);
+            printer.newLine();
+
+            printer.newLine();
+            printer.println('Einnahme 19,0 %');
+            printer.println(`Summe = 0,00 Euro`);
+            printer.newLine();
+
+            printer.drawLine();
+            printer.println(`TOTAL = ${sum7.toFixed(2)} Euro`);
+
+            printer.println('BAREINNAHME');
+
+            printer.tableCustom([
+                {text: `   MWST`, align: "LEFT", width: 0.25},
+                {text: `Wert`, align: "LEFT", width: 0.25},
+                {text: `Netto`, align: "LEFT", width: 0.25},
+                {text: `Brutto`, align: "LEFT", width: 0.25}
+            ]);
+
+            printer.tableCustom([
+                {text: `   7%`, align: "LEFT", width: 0.25},
+                {text: `${(sum7Bar * 0.07).toFixed(2)}`, align: "LEFT", width: 0.25},
+                {text: `${(sum7Bar * 0.93).toFixed(2)}`, align: "LEFT", width: 0.25},
+                {text: `${sum7Bar.toFixed(2)}`, align: "LEFT", width: 0.25}
+            ]);
+
+            printer.tableCustom([
+                {text: `   19%`, align: "LEFT", width: 0.25},
+                {text: `0,00`, align: "LEFT", width: 0.25},
+                {text: `0,00`, align: "LEFT", width: 0.25},
+                {text: `0,00`, align: "LEFT", width: 0.25}
+            ]);
+
+            printer.newLine();
+
+            printer.println('KREDITZAHLUNGEN (UNBAR)');
+
+            printer.tableCustom([
+                {text: `   MWST`, align: "LEFT", width: 0.25},
+                {text: `Wert`, align: "LEFT", width: 0.25},
+                {text: `Netto`, align: "LEFT", width: 0.25},
+                {text: `Brutto`, align: "LEFT", width: 0.25}
+            ]);
+
+            printer.tableCustom([
+                {text: `   7%`, align: "LEFT", width: 0.25},
+                {text: `${(sum7Kredit * 0.07).toFixed(2)}`, align: "LEFT", width: 0.25},
+                {text: `${(sum7Kredit * 0.93).toFixed(2)}`, align: "LEFT", width: 0.25},
+                {text: `${sum7Kredit.toFixed(2)}`, align: "LEFT", width: 0.25}
+            ]);
+
+            printer.tableCustom([
+                {text: `   19%`, align: "LEFT", width: 0.25},
+                {text: `0,00`, align: "LEFT", width: 0.25},
+                {text: `0,00`, align: "LEFT", width: 0.25},
+                {text: `0,00`, align: "LEFT", width: 0.25}
+            ]);
+
+            printer.newLine();
+
+            printer.leftRight(' ', `Summe Netto = ${(sum7 * 0.93).toFixed(2)}`);
+            printer.leftRight(' ', `Summe MwSt = ${(sum7 * 0.07).toFixed(2)}`);
+            printer.leftRight(' ', `Summe Brutto = ${sum7.toFixed(2)}`);
+
+            printer.cut();
+            print();
         }
     }
 });
@@ -744,6 +859,7 @@ const OrderView = cms.registerSchema({
         $scope.clear = function () {
             $scope.data.phone = '';
             $scope.data.export = {
+                paymentOption: 'Barverkauf',
                 item: []
             };
 
@@ -836,7 +952,10 @@ const OrderView = cms.registerSchema({
         }
 
         $scope.order = function () {
-            if ($scope.data.customer.fromInternet) $scope.data.export.fromInternet = true;
+            if ($scope.data.customer.fromInternet) {
+                $scope.data.export.fromInternet = true;
+                $scope.data.export.paymentOption = 'Unbar';
+            }
             if ($scope.data.customer.showUstId) $scope.data.export.showUstId = true;
             $scope.data.export.item = _.filter($scope.data.export.item, item => item.food);
             function _order() {
@@ -887,7 +1006,7 @@ const OrderView = cms.registerSchema({
 
             if (_.includes(free, parseInt(zipcode))) return 0;
             if (_.includes(cost1, parseInt(zipcode))) return 1;
-            if (_.includes(cost15, parseInt(zipcode))) return 1.5;
+            if (_.includes(ost15, parseInt(zipcode))) return 1.5;
             return 2;
         }
 
@@ -1059,8 +1178,8 @@ var SerialPort = require('serialport');
 
 SerialPort.list(function (err, ports) {
     ports.forEach(function (port) {
-        if ((/usbmodem/i).test(port.comName)) {
-            var sp = new SerialPort('/dev/tty.usbmodem12345671', {
+        if ((/COM3/i).test(port.comName)) {
+            var sp = new SerialPort('COM3', {
                 parser: SerialPort.parsers.readline("\n")
             });
 
@@ -1098,7 +1217,7 @@ SerialPort.list(function (err, ports) {
 function print() {
     Print.printDirect({
         data: printer.getBuffer() // or simple String: "some text"
-        , printer: 'EPSON_TM_T20II'
+        , printer: 'EPSON TM-T20II Receipt'
         , type: 'RAW' // type: RAW, TEXT, PDF, JPEG, .. depends on platform
         , success: function (jobID) {
             console.log("sent to printer with ID: " + jobID);
