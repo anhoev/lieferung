@@ -499,16 +499,24 @@ const Export = cms.registerSchema({
                     printer.newLine();
 
                     if (_export.showUstId) {
+
                         printer.newLine();
                         printer.println(`StNr: ${info.ustId}`);
+                        printer.newLine();
+                        printer.println(`Bewirtete Personen:`);
+                        printer.newLine();printer.drawLine();
+                        printer.newLine();printer.drawLine();
+                        printer.newLine();printer.drawLine();
+                        printer.newLine();
                         printer.println(`Anlass der Bewirtung:`);
+                        printer.newLine();printer.drawLine();
+                        printer.newLine();printer.drawLine();
+                        printer.newLine();printer.drawLine();
                         printer.newLine();
-                        printer.drawLine();
+                        printer.println('Ort, Datum:______________________________');
                         printer.newLine();
-                        printer.drawLine();
                         printer.newLine();
-                        printer.drawLine();
-
+                        printer.println('Unterschrift:____________________________');
                         printer.newLine();
                     }
 
@@ -729,9 +737,26 @@ const Report = cms.registerSchema({
             const sum19Bar = _.reduce(_.filter(exports, {paymentOption: 'Barverkauf'}), (sum, _export) => sum + _export.sum19Brutto, 0);
             const sum19Kredit = sum19 - sum19Bar;
 
+            const info = yield PersonalInformation.findOne().lean();
+
+            printer.alignCenter();
+            printer.setTextQuadArea();
+            printer.println(info.name);
+            printer.setTextNormal();
+            printer.bold(true);
+
+            printer.alignLeft();
+            printer.newLine();
+            printer.println(info.address.street);
+            printer.println(`${info.address.zipcode} ${info.address.city}`);
+            printer.println(`Telefon: ${info.phone}`);
+            printer.newLine();
+            printer.newLine();
+
             printer.bold(true);
             printer.println('KASSENBERICHT (LIEFERSERVICE)');
-            printer.bold(false);
+            printer.newLine();
+
             printer.println(`für ${moment(date).format('DD.MM.YYYY')}`);
             printer.newLine();
             printer.println('Vorgang / Summe');
@@ -980,7 +1005,7 @@ const OrderView = cms.registerSchema({
 
             if (_.includes(free, parseInt(zipcode))) return 0;
             if (_.includes(cost1, parseInt(zipcode))) return 1;
-            if (_.includes(ost15, parseInt(zipcode))) return 1.5;
+            if (_.includes(cost15, parseInt(zipcode))) return 1.5;
             return 2;
         }
 
