@@ -2,39 +2,39 @@
     <div class="panel panel-default  panel-xs shadow" style="height: 85vh">
         <div class="panel-body">
             <div class="cms">
-
                 <form class="cms-form form-horizontal">
-                    <div cms-form-path="address.name"
-                         type="Customer" cms-class="col-xs-6" model="data.customer.address"></div>
-
-                    <div cms-form-path="note"
-                         type="Customer" cms-class="col-xs-6" model="data.customer"></div>
+                    <div cms-form-path="phone"
+                         type="Customer" cms-class="col-xs-12" model="data.customer"></div>
 
                     <div cms-form-path="name"
-                         type="Customer" cms-class="col-xs-6" model="data.customer"></div>
+                         type="Customer" cms-class="col-xs-8" model="data.customer"></div>
 
-                    <div cms-form-path="phone"
-                         type="Customer" cms-class="col-xs-6" model="data.customer"></div>
+                    <div cms-form-path="address.name"
+                         type="Customer" cms-class="col-xs-4" model="data.customer.address"></div>
+
 
                     <div cms-form-path="address.streetObj"
-                         type="Customer" cms-class="col-xs-6" model="data.customer.address"></div>
+                         type="Customer" cms-class="col-xs-8" model="data.customer.address"></div>
 
                     <div cms-form-path="address.houseNumber"
-                         type="Customer" cms-class="col-xs-6" model="data.customer.address"></div>
+                         type="Customer" cms-class="col-xs-4" model="data.customer.address"></div>
 
                     <div class="clearfix"></div>
 
                     <div cms-form-path="address.street"
-                         type="Customer" cms-class="col-xs-6" model="data.customer.address"></div>
+                         type="Customer" cms-class="col-xs-8" model="data.customer.address"></div>
 
                     <div cms-form-path="address.floor"
-                         type="Customer" cms-class="col-xs-6" model="data.customer.address"></div>
+                         type="Customer" cms-class="col-xs-4" model="data.customer.address"></div>
 
                     <div cms-form-path="address.zipcode"
-                         type="Customer" cms-class="col-xs-6" model="data.customer.address"></div>
+                         type="Customer" cms-class="col-xs-8" model="data.customer.address"></div>
 
                     <div cms-form-path="address.city"
-                         type="Customer" cms-class="col-xs-6" model="data.customer.address"></div>
+                         type="Customer" cms-class="col-xs-4" model="data.customer.address"></div>
+
+                    <div cms-form-path="note"
+                         type="Customer" cms-class="col-xs-6" model="data.customer"></div>
 
                     <div class="clearfix"></div>
 
@@ -53,9 +53,9 @@
 
                     <div class="clearfix"></div>
                     <div class="col-xs-12">
-                        <button class="cms-btn btn-outline btn btn-default btn-sm" ng-click="saveCustomer()">Speichern
+                        <button type="button" class="cms-btn btn-outline btn btn-default btn-sm" ng-click="saveCustomer()">Speichern
                         </button>
-                        <button class="cms-btn btn-outline btn btn-sm btn-danger" ng-click="clear()">Leeren</button>
+                        <button type="button" class="cms-btn btn-outline btn btn-sm btn-danger" ng-click="clear()">Leeren</button>
                     </div>
 
                 </form>

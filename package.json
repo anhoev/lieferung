@@ -27,6 +27,7 @@
     "node-thermal-printer": "^1.0.3",
     "printer": "^0.2.2",
     "q": "^1.4.1",
+    "selectize": "^0.12.4",
     "serialport": "^4.0.3",
     "serialport2": "0.0.5",
     "thermalprinter": "^0.3.8"

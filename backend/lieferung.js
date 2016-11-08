@@ -31,10 +31,42 @@ printer.println = function (str) {
 }
 
 const customerSchema = {
-    name: {type: String, label: 'Name'},
+    name: {
+        type: String, label: 'Name',
+        form: {
+            link: function (scope, element) {
+                setTimeout(function () {
+                    $(element).find('input').keydown(function (e) {
+                        var key = e.charCode ? e.charCode : e.keyCode ? e.keyCode : 0;
+                        if (key == 13) {
+                            e.preventDefault();
+                            var inputs = $(this).closest('form').find(':input:visible');
+                            inputs.eq(inputs.index(this) + 1).focus();
+                        }
+                    });
+                })
+            }
+        }
+    },
     //Id: {type: Number},
     address: {
-        name: {type: String, label: 'Firma'},
+        name: {
+            type: String, label: 'Firma',
+            form: {
+                link: function (scope, element) {
+                    setTimeout(function () {
+                        $(element).find('input').keydown(function (e) {
+                            var key = e.charCode ? e.charCode : e.keyCode ? e.keyCode : 0;
+                            if (key == 13) {
+                                e.preventDefault();
+                                var inputs = $(this).closest('form').find(':input:visible');
+                                inputs.eq(inputs.index(this) + 1).focus();
+                            }
+                        });
+                    })
+                }
+            }
+        },
         streetObj: {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'Street',
@@ -42,7 +74,11 @@ const customerSchema = {
             label: 'Straße Suchen',
             form: {
                 templateOptions: {
-                    async: true
+                    async: true,
+                    makeRegex: function (query) {
+                        if (!query || query === '') return '';
+                        return new RegExp(`^${query}`, 'ig')
+                    }
                 },
                 controller: function ($scope, $timeout) {
                     $scope.$watch('model.streetObj', function (newVal, oldVal) {
@@ -55,7 +91,20 @@ const customerSchema = {
                             $scope.model.city = 'Hamburg';
                         })
                     }, true);
+                },
+                link: function (scope, element) {
+                    setTimeout(function () {
+                        $(element).find('input').keydown(function (e) {
+                            var key = e.charCode ? e.charCode : e.keyCode ? e.keyCode : 0;
+                            if (key == 13) {
+                                e.preventDefault();
+                                var inputs = $(this).closest('form').find(':input:visible');
+                                inputs.eq(inputs.index(this) + 1).focus();
+                            }
+                        });
+                    })
                 }
+
             }
         },
         houseNumber: {
@@ -76,15 +125,106 @@ const customerSchema = {
                             })
                         }
                     })
+                },
+                link: function (scope, element) {
+                    setTimeout(function () {
+                        $(element).find('input').keydown(function (e) {
+                            var key = e.charCode ? e.charCode : e.keyCode ? e.keyCode : 0;
+                            if (key == 13) {
+                                e.preventDefault();
+                                var inputs = $(this).closest('form').find(':input:visible');
+                                inputs.eq(inputs.index(this) + 2).focus();
+                            }
+                        });
+                    })
                 }
             }
         },
         street: {type: String, label: 'Straße'},
-        floor: {type: String, label: 'Etage'},
-        zipcode: {type: String, label: 'PLZ'},
-        city: {type: String, label: 'Stadt'},
+        floor: {
+            type: String, label: 'Etage',
+            form: {
+                link: function (scope, element) {
+                    setTimeout(function () {
+                        $(element).find('input').keydown(function (e) {
+                            var key = e.charCode ? e.charCode : e.keyCode ? e.keyCode : 0;
+                            if (key == 13) {
+                                e.preventDefault();
+                                var inputs = $(this).closest('form').find(':input:visible');
+                                inputs.eq(inputs.index(this) + 3).focus();
+                            }
+                        });
+                    })
+                }
+            }
+        },
+        zipcode: {
+            type: String, label: 'PLZ',
+            form: {
+                link: function (scope, element) {
+                    setTimeout(function () {
+                        $(element).find('input').keydown(function (e) {
+                            var key = e.charCode ? e.charCode : e.keyCode ? e.keyCode : 0;
+                            if (key == 13) {
+                                e.preventDefault();
+                                var inputs = $(this).closest('form').find(':input:visible');
+                                inputs.eq(inputs.index(this) + 1).focus();
+                            }
+                        });
+                    })
+                }
+            }
+        },
+        city: {
+            type: String, label: 'Stadt', form: {
+                link: function (scope, element) {
+                    setTimeout(function () {
+                        $(element).find('input').keydown(function (e) {
+                            var key = e.charCode ? e.charCode : e.keyCode ? e.keyCode : 0;
+                            if (key == 13) {
+                                e.preventDefault();
+                                var inputs = $(this).closest('form').find(':input:visible');
+                                inputs.eq(inputs.index(this) + 1).focus();
+                            }
+                        });
+                    })
+                }
+            }
+        },
     },
-    phone: {type: String, label: 'Telefon'},
+    phone: {
+        type: String, label: 'Telefon', form: {
+            link: function (scope, element) {
+                setTimeout(function () {
+                    $(element).find('input').keydown(function (e) {
+                        var key = e.charCode ? e.charCode : e.keyCode ? e.keyCode : 0;
+                        if (key == 13) {
+                            e.preventDefault();
+                            var inputs = $(this).closest('form').find(':input:visible');
+                            cms.sendWs({
+                                    path: `get/api/v1/Customer`,
+                                    params: {query: {phone: $(this).val()}}
+                                }, ({result}) => {
+                                    if (result && result.length > 0) {
+                                        scope.$apply(function () {
+                                            _.assign(scope.model, result[0]);
+                                        })
+                                        if (window._focus) window._focus();
+                                    } else {
+                                        inputs.eq(inputs.index(this) + 1).focus();
+                                    }
+                                }
+                            );
+                        }
+                    });
+
+                    window._focusTelefon = function () {
+                        $(element).find('input').focus();
+                    }
+                })
+            }
+        }
+    },
     fax: String,
     email: {
         type: String,
@@ -96,48 +236,45 @@ const customerSchema = {
             }
         }
     },
-    note: {type: String, label: 'Notiz'}
+    note: {
+        type: String, label: 'Notiz',
+        form: {
+            link: function (scope, element) {
+                setTimeout(function () {
+                    $(element).find('input').keydown(function (e) {
+                        var key = e.charCode ? e.charCode : e.keyCode ? e.keyCode : 0;
+                        if (key == 13) {
+                            e.preventDefault();
+                            window._focus();
+                        }
+                    });
+                })
+            }
+        }
+    }
 }
 
 const Customer = cms.registerSchema(merge(customerSchema, {
-    /*Id: {
-     form: {
-     controller: function ($scope, $http, cms) {
-     if (!$scope.model[$scope.options.key]) {
-     $http.get('api/customerId').then(function ({data}) {
-     $scope.model[$scope.options.key] = data.maxId;
-     });
-     }
-     }
-     }
-     },*/
-    fromInternet: {type: Boolean, label: 'Von Internet'},
-    showUstId: {type: Boolean, label: 'Ust-IdNr anzeigen'}
-}), {
-    name: 'Customer',
-    label: 'Kunden',
-    formatter: `
+        fromInternet: {type: Boolean, label: 'Von Internet'},
+        showUstId: {type: Boolean, label: 'Ust-IdNr anzeigen'}
+    }),
+    {
+        name: 'Customer',
+        label: 'Kunden',
+        formatter: `
             <h4>{{model.name}}</h4>
         `,
-    title: 'title',
-    isViewElement: false,
-    autopopulate: true,
-    alwaysLoad: false,
-    initSchema: function (schema) {
-        schema.virtual('title').get(function () {
-            return `${this.name}   *${this.phone}, ${this.address.street}, ${this.address.zipcode}  ${this.address.city}`;
-        })
-    },
-    lean: false
-});
-
-cms.app.get('/api/customerId', function*(req, res) {
-    const result = yield Customer.aggregate().group({
-        _id: "",
-        maxID: {$max: "$Id"}
-    }).exec();
-    res.send({maxId: result[0].maxID + 1});
-})
+        title: 'title',
+        isViewElement: false,
+        autopopulate: true,
+        alwaysLoad: false,
+        initSchema: function (schema) {
+            schema.virtual('title').get(function () {
+                return `${this.name}   *${this.phone}, ${this.address.street}, ${this.address.zipcode}  ${this.address.city}`;
+            })
+        },
+        lean: false
+    });
 
 const Category = cms.registerSchema({
     name: {type: String},
@@ -305,10 +442,15 @@ const Export = cms.registerSchema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Customer',
         autopopulate: true,
-        label: 'Kunden',
+        label: 'Kunden Suchen',
         form: {
             templateOptions: {
                 async: true
+            },
+            link: function (scope, element) {
+                window._customerSearch = function () {
+                    $(element).find('input').focus();
+                }
             }
         }
     },
@@ -324,14 +466,24 @@ const Export = cms.registerSchema({
                 label: 'Speise',
                 form: {
                     controller: function ($scope, $timeout) {
-
                         $scope.$watch('model.food', (newVal, oldVal) => {
                             if (!newVal) return;
                             if (oldVal && oldVal._id === newVal._id) return;
                             $scope.model.price = $scope.model.food.price;
-                            $scope.model.quantity = 1;
                             if (!oldVal) $scope.formState.model.item.push({});
                             $('#left-panel').animate({scrollTop: $('#left-panel').height()}, 10);
+                        })
+                    },
+                    link: function (scope, element, attrs) {
+                        setTimeout(function () {
+                            $(element).find('input').keydown(function (e) {
+                                var key = e.charCode ? e.charCode : e.keyCode ? e.keyCode : 0;
+                                if (key == 13) {
+                                    e.preventDefault();
+                                    var inputs = $(this).closest('form').find(':input:visible');
+                                    inputs.eq(inputs.index(this) + 1).focus();
+                                }
+                            });
                         })
                     },
                     templateOptions: {
@@ -340,7 +492,29 @@ const Export = cms.registerSchema({
                 }
             },
             quantity: {
-                type: Number, label: 'Anzahl'
+                type: Number, label: 'Anzahl',
+                form: {
+                    link: function (scope, element, attrs) {
+                        setTimeout(function () {
+                            $(element).find('input').keydown(function (e) {
+                                var key = e.charCode ? e.charCode : e.keyCode ? e.keyCode : 0;
+                                if (key == 13) {
+                                    e.preventDefault();
+                                    var inputs = $(this).closest('form').find(':input:visible');
+                                    inputs.eq(inputs.index(this) + 3).focus();
+                                }
+                            });
+                            $(element).find('input').on('focus', function () {
+                                if (!$(this).val()) {
+                                    $(this).val(1);
+                                    scope.model[scope.options.key] = 1;
+                                }
+                                $(this).select();
+                            });
+
+                        })
+                    }
+                }
             },
             price: {
                 type: Number, label: 'Preis', form: {
@@ -412,6 +586,7 @@ const Export = cms.registerSchema({
                     printer.println(info.address.street);
                     printer.println(`${info.address.zipcode} ${info.address.city}`);
                     printer.println(`Telefon: ${info.phone}`);
+                    printer.println(`Fax: 040563012${_export.Id}`);
                     printer.newLine();
                     printer.newLine();
                     printer.println('KD');
@@ -422,11 +597,7 @@ const Export = cms.registerSchema({
                 printer.println(_export.customer.name);
                 if (_export.customer.address.name && _export.customer.address.name !== _export.customer.name) printer.println(_export.customer.address.name);
                 printer.print('   ' + _export.customer.address.street);
-                if (_export.customer.address.houseNumber) {
-                    printer._println(' ' + _export.customer.address.houseNumber);
-                } else {
-                    printer.newLine();
-                }
+
                 if (_export.customer.address.floor) printer.println(`Etage: ${_export.customer.address.floor}`);
                 printer.println(`${_export.customer.address.zipcode} ${_export.customer.address.city}`);
                 if (_export.customer.phone) printer.println(`Telefon: ${_export.customer.phone}`);
@@ -504,14 +675,20 @@ const Export = cms.registerSchema({
                         printer.println(`StNr: ${info.ustId}`);
                         printer.newLine();
                         printer.println(`Bewirtete Personen:`);
-                        printer.newLine();printer.drawLine();
-                        printer.newLine();printer.drawLine();
-                        printer.newLine();printer.drawLine();
+                        printer.newLine();
+                        printer.drawLine();
+                        printer.newLine();
+                        printer.drawLine();
+                        printer.newLine();
+                        printer.drawLine();
                         printer.newLine();
                         printer.println(`Anlass der Bewirtung:`);
-                        printer.newLine();printer.drawLine();
-                        printer.newLine();printer.drawLine();
-                        printer.newLine();printer.drawLine();
+                        printer.newLine();
+                        printer.drawLine();
+                        printer.newLine();
+                        printer.drawLine();
+                        printer.newLine();
+                        printer.drawLine();
                         printer.newLine();
                         printer.println('Ort, Datum:______________________________');
                         printer.newLine();
@@ -525,6 +702,7 @@ const Export = cms.registerSchema({
                     printer.println(`Ihr Kim Chi Team`);
                 }
 
+                printer.newLine();
                 printer.cut();
             }
 
@@ -839,6 +1017,8 @@ cms.app.get('/api/phone', function*(req, res) {
     }
 })
 
+cms.app.use('/shortcut.js', cms.express.static(path.resolve(__dirname, 'shortcut.js')));
+
 const OrderView = cms.registerSchema({
     name: String
 }, {
@@ -848,7 +1028,7 @@ const OrderView = cms.registerSchema({
     isViewElement: true,
     autopopulate: true,
     alwaysLoad: true,
-    controller: function ($scope, cms, formService, $timeout, $http) {
+    controller: function ($scope, cms, formService, $timeout, $http, $uibModal) {
         $('#left-panel').css('height', $('#left-panel').height() + 'px');
         $scope.data = {
             waitCustomers: [],
@@ -868,10 +1048,6 @@ const OrderView = cms.registerSchema({
 
             $scope.data.customer = {address: {city: 'Hamburg'}};
 
-            $http.get('api/customerId').then(function ({data}) {
-                $scope.data.customer.Id = data.maxId;
-            });
-
             $http.get('api/exportId').then(function ({data}) {
                 $scope.data.export.Id = data.maxId;
             });
@@ -886,6 +1062,10 @@ const OrderView = cms.registerSchema({
         })
 
         $scope.clear();
+
+        window._clear = function () {
+            $scope.clear();
+        }
 
         $scope.newCustomer = function (cb) {
             cms.createElement('Customer', $scope.data.customer, function (model) {
@@ -950,6 +1130,10 @@ const OrderView = cms.registerSchema({
             $scope.newCustomer();
         }
 
+        window._fromInternet = function () {
+            $scope.data.customer.fromInternet = !$scope.data.customer.fromInternet;
+        }
+
         $scope.order = function () {
             if ($scope.data.customer.fromInternet) {
                 $scope.data.export.fromInternet = true;
@@ -973,6 +1157,15 @@ const OrderView = cms.registerSchema({
             }
 
         }
+
+        window._order = function () {
+            $scope.order();
+        }
+
+        window._showUstId = function () {
+            $scope.data.customer.showUstId = !$scope.data.customer.showUstId;
+        }
+
 
         $scope.orderFromInternet = function () {
             $scope.data.export.fromInternet = true;
@@ -1055,6 +1248,80 @@ const OrderView = cms.registerSchema({
 
         })
 
+        window._openAdmin = function () {
+            $timeout(function () {
+                const modal = $uibModal.open({
+                    template: `
+                            <div style="padding: 20px;">
+                                <form class="form">
+                                    <input placeholder="password" type="password" ng-model="password" class="form-control">
+                                    <br>
+                                    <button ng-click="close(password)" class="btn btn-success btn-sm">OK</button>
+                                    <button ng-click="cancel()" class="btn btn-success btn-sm">Cancel</button>
+                                </form>
+                            </div>
+                        `,
+                    controller: function ($scope, $uibModalInstance) {
+                        $scope.close = function (password) {
+                            if (password === 'KimChi1111') {
+                                $uibModalInstance.close();
+                            }
+                        }
+                        $scope.cancel = function () {
+                            $uibModalInstance.dismiss();
+                        }
+                    }
+                });
+
+                modal.result.then(function () {
+                    window._openAdminPage();
+                })
+
+                // window._openAdminPage();
+            })
+        }
+
+    },
+    link: function (scope, element) {
+        setTimeout(function () {
+            $('nav').css('display','none');
+
+            shortcut.add("F1", function () {
+                window._focusTelefon();
+            });
+
+            shortcut.add("F2", function () {
+                window._focus();
+            });
+
+            shortcut.add("F3", function () {
+                window._customerSearch();
+            });
+
+            shortcut.add("F8", function () {
+                window._clear();
+            });
+
+            shortcut.add("F7", function () {
+                window._openAdmin();
+            });
+
+            shortcut.add("F12", function () {
+                window._order();
+            });
+
+
+            shortcut.add("End", function () {
+                scope.$apply(function () {
+                    window._fromInternet();
+                })
+            });
+            shortcut.add("Page_down", function () {
+                scope.$apply(function () {
+                    window._showUstId();
+                })
+            });
+        })
     },
     serverFn: {}
 });
@@ -1073,7 +1340,7 @@ const Street = cms.registerSchema({
         alwaysLoad: false,
         initSchema: function (schema) {
             schema.virtual('title').get(function () {
-                return `${this.name}   ${this.zipcode ? this.zipcode : ''}`;
+                return `${this.name}`;
             })
 
         },
