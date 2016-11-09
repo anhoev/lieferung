@@ -1174,16 +1174,7 @@ const OrderView = cms.registerSchema({
 
         $scope.shippingCostCalculate = function (zipcode) {
             const free = [
-                22393,
-                22159, 22393,
-                22393,
-                22047, 22159, 22175, 22177, 22179, 22309, 22393,
-                22145, 22159,
-                22177, 22309,
-                22297, 22303, 22305, 22307, 22309,
-                22081, 22083, 22085, 22305,
-                22041, 22043, 22045, 22047, 22159,
-                22143, 22145, 22147
+                22171,22179,22175,22159,22145,22147,22177,22391,22393,22047,22309
             ];
 
             const cost1 = [
@@ -1191,14 +1182,13 @@ const OrderView = cms.registerSchema({
             ]
 
             const cost15 = [
-                22339, 22391, 22415, 22417,
-                22397,
                 22359, 22395
             ]
 
             if (_.includes(free, parseInt(zipcode))) return 0;
             if (_.includes(cost1, parseInt(zipcode))) return 1;
             if (_.includes(cost15, parseInt(zipcode))) return 1.5;
+
             return 2;
         }
 
@@ -1218,6 +1208,10 @@ const OrderView = cms.registerSchema({
             if ($scope.data.free) {
                 $scope.data.waitCustomers.splice($index, 1);
             }
+        }
+
+        window._nextCustomer = function () {
+            $scope._setCustomer(0);
         }
 
         cms.socket.on('message', event => {
@@ -1319,6 +1313,11 @@ const OrderView = cms.registerSchema({
             shortcut.add("Page_down", function () {
                 scope.$apply(function () {
                     window._showUstId();
+                })
+            });
+            shortcut.add("Page_up", function () {
+                scope.$apply(function () {
+                    window._nextCustomer();
                 })
             });
         })

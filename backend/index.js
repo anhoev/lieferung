@@ -30,4 +30,4 @@ cms.menu = {
 
 cms.server('backend/en', '');
 
-cms.data.online.wsAddress = 'ws://192.168.1.11:8888';
+// cms.data.online.wsAddress = 'ws://192.168.1.11:8888';
