@@ -256,7 +256,7 @@ const customerSchema = {
 
 const Customer = cms.registerSchema(merge(customerSchema, {
         fromInternet: {type: Boolean, label: 'Von Internet'},
-        showUstId: {type: Boolean, label: 'Ust-IdNr anzeigen'}
+        showUstId: {type: Boolean, label: 'Bewirtung'}
     }),
     {
         name: 'Customer',
