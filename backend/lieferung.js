@@ -44,6 +44,11 @@ const customerSchema = {
                             inputs.eq(inputs.index(this) + 1).focus();
                         }
                     });
+
+                    window._focusName = function () {
+                        $(element).find('input').focus();
+                    }
+
                 })
             }
         }
@@ -664,8 +669,8 @@ const Export = cms.registerSchema({
                         printer.newLine();
                     }
 
-                    printer.println(`MwSt 07,00% = ${_export.vat7.toFixed(2)} EUR`);
-                    printer.println(`MwSt 19,00% = 0,00 EUR`);
+                    printer.println(`MwSt 07,00% = ${(_export.sum7Brutto * 0.07).toFixed(2)} EUR`);
+                    printer.println(`MwSt 19,00% = ${(_export.sum19Brutto * 0.19).toFixed(2)} EUR`);
 
                     printer.newLine();
 
@@ -1174,7 +1179,7 @@ const OrderView = cms.registerSchema({
 
         $scope.shippingCostCalculate = function (zipcode) {
             const free = [
-                22171,22179,22175,22159,22145,22147,22177,22391,22393,22047,22309
+                22171, 22179, 22175, 22159, 22145, 22147, 22177, 22391, 22393, 22047, 22309
             ];
 
             const cost1 = [
@@ -1200,6 +1205,7 @@ const OrderView = cms.registerSchema({
                 window._focus();
             } else {
                 $scope.data.customer.phone = customer.phone;
+                window._focusName();
             }
         }
 
@@ -1230,6 +1236,7 @@ const OrderView = cms.registerSchema({
                     $scope.setCustomer({
                         phone: _data.phone
                     });
+                    window._focusName();
                 } else {
                     $scope.data.waitCustomers.push({
                         phone: _data.phone
@@ -1278,7 +1285,7 @@ const OrderView = cms.registerSchema({
     },
     link: function (scope, element) {
         setTimeout(function () {
-            $('nav').css('display','none');
+            $('nav').css('display', 'none');
 
             shortcut.add("F1", function () {
                 window._focusTelefon();
@@ -1346,99 +1353,6 @@ const Street = cms.registerSchema({
     }
 );
 
-/*q.spawn(function*() {
- yield Street.find({}).remove().exec();
- const content = JsonFn.parse(fs.readFileSync(`backend/hamburg.json`, 'utf8'));
- let i = 0;
- for (const element of content.elements) {
- const {tags, id} = element;
- const street = {
- name: tags.name,
- zipcode: tags.postal_code,
- _id: new Street()._id
- };
-
- const _street = yield Street.findOne({name: tags.name});
- let save = true;
- if (_street && !_street.zipcode && street.zipcode) {
- street._id = _street._id
- } else if (_street && _street.zipcode && !street.zipcode) {
- save = false;
- } else if (_street && !_street.zipcode && !street.zipcode) {
- save = false;
- } else if (_street && _street.zipcode && street.zipcode && _street.zipcode === street.zipcode) {
- save = false;
- }
-
- // if (tags.name === 'Horner Weg') debugger
-
- if (save) {
- yield Street.findOneAndUpdate({_id: street._id}, street, {
- upsert: true,
- setDefaultsOnInsert: true
- }).exec();
- }
-
- }
- debugger
- })*/
-
-/*q.spawn(function*() {
- const content = fs.readFileSync(`backend/k8.txt`, 'utf8');
- const arr = content.split('\r\n \r\n \r\n \r\n \r\n \r\n ');
- for (const raw of arr) {
- let raws = raw.split('\r\n');
- raws = raws.map(r => _.trim(r.replace('|', '')));
- const phone = raws[0][0] !== '0' ? `040${raws[0]}` : raws[0];
- const ort = raws[4];
- let plz = ort.match(/[0-9]{5}/);
- let city;
- let zipcode;
- if (plz && plz[0]) {
- zipcode = plz[0];
- city = _.trim(ort.replace(plz[0], ''));
- } else {
- city = _.trim(ort);
- }
-
- const customer = {
- name: raws[1],
- phone,
- address: {
- name: raws[1],
- street: raws[3],
- floor: raws[2],
- zipcode,
- city
- },
- note: raws[5]
- }
- Customer.findOneAndUpdate(customer, customer, {
- upsert: true,
- setDefaultsOnInsert: true
- }).exec();
- }
- })*/
-
-/*q.spawn(function*() {
- yield Customer.find({$or: [{name: ''}, {name: null}, {phone: ''}, {phone: null}]}).remove().exec();
- })*/
-
-/*q.spawn(function *() {
- const foods = yield Food.find({name: /ﬂ/i});
- for (const food of foods) {
- food.name = food.name.replace('ﬂ', 'fl');
- Food.findOneAndUpdate({_id: food._id}, food, {
- upsert: true,
- setDefaultsOnInsert: true
- }).exec();
- }
- })*/
-
-/*q.spawn(function*() {
- const customer = yield Customer.findOne({_id: '58060b2701ee07bd99f8944b'});
- })*/
-
 var SerialPort = require('serialport');
 
 SerialPort.list(function (err, ports) {
@@ -1493,3 +1407,4 @@ function print() {
     });
     printer.clear();
 }
+
