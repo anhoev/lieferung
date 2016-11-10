@@ -1221,7 +1221,7 @@ const OrderView = cms.registerSchema({
         }
 
         window._nextCustomer = function () {
-            $scope._setCustomer(0);
+            $scope._setCustomer($scope.data.waitCustomers[0], 0);
         }
 
         cms.socket.on('message', event => {
