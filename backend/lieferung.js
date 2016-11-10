@@ -618,7 +618,7 @@ const Export = cms.registerSchema({
 
                     printer.newLine();
 
-                    printer.println(`                            ${moment(_export.date).format("DD.MM.YYYY hh:mm")}`);
+                    printer.println(`                            ${moment(_export.date).format("DD.MM.YYYY HH:mm")}`);
                     printer.newLine();
 
                     printer.drawLine();
@@ -1144,8 +1144,12 @@ const OrderView = cms.registerSchema({
                 $scope.data.export.fromInternet = true;
                 $scope.data.export.paymentOption = 'Unbar';
             }
+
             if ($scope.data.customer.showUstId) $scope.data.export.showUstId = true;
             $scope.data.export.item = _.filter($scope.data.export.item, item => item.food);
+
+            if (!$scope.data.export.customer) $scope.data.export.customer = $scope.data.customer;
+
             function _order() {
                 cms.createElement('Export', $scope.data.export, function (_export) {
                     cms.execServerFn('Export', _export, 'printQuitung');
@@ -1348,7 +1352,6 @@ const Street = cms.registerSchema({
             schema.virtual('title').get(function () {
                 return `${this.name}`;
             })
-
         },
     }
 );
