@@ -114,7 +114,7 @@
             <div>
                 <span class="pull-left text-violet" style="margin-top: 13px;"
                       ng-show="data.sum">Summe: {{ data.sum | currency}}</span>
-                <span class="pull-left text-violet" style="margin-top: 13px;" ng-show="data.export.shippingCost">Anfahrtskosten: {{ data.export.shippingCost.toFixed(2) }} Euro</span>
+                <span class="pull-left text-violet" style="margin-top: 13px;">Anfahrtskosten: <input ng-model="data.export.shippingCost" class="form-control input-xs" style="width: 30px;display: inline"> Euro</span>
                 <div style="padding-top: 10px;margin-right: 17px;" class="pull-right">
                     <button class="cms-btn btn-outline btn btn-sm btn-danger" ng-click="order()">Bestellen</button>
                     <button class="cms-btn btn-outline btn btn-sm btn-danger" ng-click="clear()">Leeren</button>

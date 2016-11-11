@@ -327,6 +327,7 @@ const Food = cms.registerSchema({
         type: [{type: mongoose.Schema.Types.ObjectId, ref: 'Category', autopopulate: {select: 'name _id'}}],
         label: 'Kategorie'
     },
+    onlyText: Boolean,
     picture: {
         type: String, form: {
             type: 'image', controller: function ($scope) {
@@ -467,7 +468,7 @@ const Export = cms.registerSchema({
             food: {
                 type: mongoose.Schema.Types.ObjectId,
                 ref: 'Food',
-                autopopulate: {select: 'Id name price tax'},
+                autopopulate: {select: 'Id name price tax onlyText'},
                 label: 'Speise',
                 form: {
                     controller: function ($scope, $timeout) {
@@ -636,19 +637,24 @@ const Export = cms.registerSchema({
 
                 for (const item of _export.item) {
                     if (!forKitchen) {
-                        printer.tableCustom([                               // Prints table with custom settings (text, align, width, bold)
+                        printer.tableCustom([
                             {
-                                text: `${item.quantity} x ${item.food.name} (${item.food.Id})`,
+                                text: `${item.quantity} x ${item.food.name} ` + (item.food.onlyText ? '' : `(${item.food.Id})`),
                                 align: "LEFT",
                                 width: 0.85
                             },
                             {text: `  ${(item.quantity * item.price).toFixed(2)}`, align: "LEFT", width: 0.15}
                         ]);
-
                     } else {
 
-                        printer._println(`  ${item.quantity} x [${item.food.Id}]`);
-                        printer._println(`  ${item.food.name}`);
+                        if (item.food.onlyText) {
+                            printer._println(`  ${item.quantity} x ${item.food.name}`);
+                        } else {
+                            printer._println(`  ${item.quantity} x [${item.food.Id}]`);
+                            printer._println(`  ${item.food.name}`);
+                        }
+
+
                         printer.newLine();
                     }
                 }
@@ -1183,7 +1189,7 @@ const OrderView = cms.registerSchema({
 
         $scope.shippingCostCalculate = function (zipcode) {
             const free = [
-                22171, 22179, 22175, 22159, 22145, 22147, 22177, 22391, 22393, 22047, 22309
+                22171, 22179, 22175, 22159, 22145, 22147, 22177, 22391, 22393, 22047, 22309, 22049
             ];
 
             const cost1 = [
@@ -1194,11 +1200,15 @@ const OrderView = cms.registerSchema({
                 22359, 22395
             ]
 
-            if (_.includes(free, parseInt(zipcode))) return 0;
+            const cost2 = [
+                22037, 22397
+            ]
+
             if (_.includes(cost1, parseInt(zipcode))) return 1;
             if (_.includes(cost15, parseInt(zipcode))) return 1.5;
+            if (_.includes(cost2, parseInt(zipcode))) return 2;
 
-            return 2;
+            return 0;
         }
 
         $scope.setCustomer = function (customer) {
