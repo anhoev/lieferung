@@ -1146,6 +1146,7 @@ const OrderView = cms.registerSchema({
         }
 
         $scope.order = function () {
+            $scope.data.export.date = new Date();
             if ($scope.data.customer.fromInternet) {
                 $scope.data.export.fromInternet = true;
                 $scope.data.export.paymentOption = 'Unbar';
