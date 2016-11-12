@@ -637,7 +637,7 @@ const Export = cms.registerSchema({
 
                 for (const item of _export.item) {
                     if (!forKitchen) {
-                        const id = (item.food.onlyText ? '' : `(${item.food.Id})`);
+                        const id = (item.food.onlyText ? '' : `${item.food.Id}`);
                         printer.tableCustom([
                             {
                                 text: `${item.quantity} x ${id} ${item.food.name} `,
@@ -1147,6 +1147,7 @@ const OrderView = cms.registerSchema({
         }
 
         $scope.order = function () {
+            if (!$scope.data.customer.phone || !$scope.data.export.item[0].food) return;
             $scope.data.export.date = new Date();
             if ($scope.data.customer.fromInternet) {
                 $scope.data.export.fromInternet = true;
