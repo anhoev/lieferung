@@ -637,9 +637,10 @@ const Export = cms.registerSchema({
 
                 for (const item of _export.item) {
                     if (!forKitchen) {
+                        const id = (item.food.onlyText ? '' : `(${item.food.Id})`);
                         printer.tableCustom([
                             {
-                                text: `${item.quantity} x ${item.food.name} ` + (item.food.onlyText ? '' : `(${item.food.Id})`),
+                                text: `${item.quantity} x ${id} ${item.food.name} `,
                                 align: "LEFT",
                                 width: 0.85
                             },
@@ -650,7 +651,7 @@ const Export = cms.registerSchema({
                         if (item.food.onlyText) {
                             printer._println(`  ${item.quantity} x ${item.food.name}`);
                         } else {
-                            printer._println(`  ${item.quantity} x [${item.food.Id}]`);
+                            printer._println(`  ${item.quantity} x ${item.food.Id}`);
                             printer._println(`  ${item.food.name}`);
                         }
 
