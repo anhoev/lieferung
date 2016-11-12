@@ -543,7 +543,7 @@ const Export = cms.registerSchema({
                 setTimeout(function () {
                     $(element).find('label').css('display', 'none');
                     window._focus = function () {
-                        $(element).find('.selectize-input').find('input').focus();
+                        $(element).find('.selectize-input:last').find('input').focus();
                     }
                     window._focus();
                 }, 100)
@@ -608,6 +608,8 @@ const Export = cms.registerSchema({
                 printer.println(`${_export.customer.address.zipcode} ${_export.customer.address.city}`);
                 if (_export.customer.phone) printer.println(`Telefon: ${_export.customer.phone}`);
                 printer.newLine();
+                printer.println(_export.customer.note);
+                printer.newLine();
                 printer.newLine();
                 printer.newLine();
 
@@ -652,7 +654,9 @@ const Export = cms.registerSchema({
                             printer._println(`  ${item.quantity} x ${item.food.name}`);
                         } else {
                             printer._println(`  ${item.quantity} x ${item.food.Id}`);
-                            printer._println(`  ${item.food.name}`);
+                            printer.setTextNormal();
+                            printer._println(`    ${item.food.name}`);
+                            printer.setTextDoubleWidth();
                         }
 
 
@@ -1299,6 +1303,42 @@ const OrderView = cms.registerSchema({
             })
         }
 
+        window._changeExport = function () {
+            $timeout(function () {
+                const modal = $uibModal.open({
+                    template: `
+                            <div style="padding: 20px;">
+                                <form class="form">
+                                    <input placeholder="Rechnung Nr" type="number" ng-model="nr" class="form-control">
+                                    <br>
+                                    <button ng-click="close(nr)" class="btn btn-success btn-sm">OK</button>
+                                    <button ng-click="cancel()" class="btn btn-success btn-sm">Cancel</button>
+                                </form>
+                            </div>
+                        `,
+                    controller: function ($scope, $uibModalInstance) {
+                        $scope.close = function (nr) {
+                            $uibModalInstance.close(nr);
+                        }
+                        $scope.cancel = function () {
+                            $uibModalInstance.dismiss();
+                        }
+                    }
+                });
+
+                modal.result.then(function (nr) {
+                    cms.execServerFn('OrderView', $scope.model, 'getRechnung', new Date(), nr).then(function ({data: [_export]}) {
+                        $scope.data.export = _export;
+                        $scope.data.customer = $scope.data.export.customer;
+                        $scope.data.export.item.push({});
+                        $timeout(function () {
+                            window._focus();
+                        })
+                    });
+                })
+            })
+        }
+
     },
     link: function (scope, element) {
         setTimeout(function () {
@@ -1318,6 +1358,10 @@ const OrderView = cms.registerSchema({
 
             shortcut.add("F8", function () {
                 window._clear();
+            });
+
+            shortcut.add("F6", function () {
+                window._changeExport();
             });
 
             shortcut.add("F7", function () {
@@ -1346,7 +1390,17 @@ const OrderView = cms.registerSchema({
             });
         })
     },
-    serverFn: {}
+    serverFn: {
+        getRechnung: function *(date, nr) {
+            return yield Export.find({
+                date: {
+                    $gte: moment(date).startOf('day').toDate(),
+                    $lte: moment(date).endOf('day').toDate()
+                },
+                Id: nr
+            });
+        }
+    }
 });
 
 
