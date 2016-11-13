@@ -437,7 +437,6 @@ const Export = cms.registerSchema({
             })
         }
     },
-    shipDate: {type: Date, default: Date.now(), label: 'Lieferdatum'},
     Id: {type: Number, label: 'Rechnung Nummer', form: idFormExport},
     paymentOption: {type: String, form: makeSelect('Unbar', 'Barverkauf'), label: 'Zahlungsmethod'},
     status: {type: String, form: makeSelect('BestellungErhalten', 'Bezahlt', 'Geliefert'), label: 'Zustand'},
@@ -1037,7 +1036,8 @@ cms.app.use('/shortcut.js', cms.express.static(path.resolve(__dirname, 'shortcut
 
 const OrderView = cms.registerSchema({
     name: String
-}, {
+},
+    {
     name: 'OrderView',
     formatterUrl: 'backend/order-view.html',
     title: 'name',
@@ -1063,10 +1063,6 @@ const OrderView = cms.registerSchema({
             }, 100)
 
             $scope.data.customer = {address: {city: 'Hamburg'}};
-
-            $http.get('api/exportId').then(function ({data}) {
-                $scope.data.export.Id = data.maxId;
-            });
 
             $timeout(function () {
                 $scope.data.free = true;
@@ -1152,32 +1148,35 @@ const OrderView = cms.registerSchema({
 
         $scope.order = function () {
             if (!$scope.data.customer.phone || !$scope.data.export.item[0].food) return;
-            $scope.data.export.date = new Date();
-            if ($scope.data.customer.fromInternet) {
-                $scope.data.export.fromInternet = true;
-                $scope.data.export.paymentOption = 'Unbar';
-            }
+            $http.get('api/exportId').then(function ({data}) {
+                $scope.data.export.Id = data.maxId;
+                $scope.data.export.date = new Date();
 
-            if ($scope.data.customer.showUstId) $scope.data.export.showUstId = true;
-            $scope.data.export.item = _.filter($scope.data.export.item, item => item.food);
+                if ($scope.data.customer.fromInternet) {
+                    $scope.data.export.fromInternet = true;
+                    $scope.data.export.paymentOption = 'Unbar';
+                }
 
-            if (!$scope.data.export.customer) $scope.data.export.customer = $scope.data.customer;
+                if ($scope.data.customer.showUstId) $scope.data.export.showUstId = true;
+                $scope.data.export.item = _.filter($scope.data.export.item, item => item.food);
 
-            function _order() {
-                cms.createElement('Export', $scope.data.export, function (_export) {
-                    cms.execServerFn('Export', _export, 'printQuitung');
-                    $scope.clear();
-                }, false)
-            }
+                if (!$scope.data.export.customer) $scope.data.export.customer = $scope.data.customer;
 
-            if (!$scope.data.customer._id) {
-                $scope.newCustomer(function () {
+                function _order() {
+                    cms.createElement('Export', $scope.data.export, function (_export) {
+                        cms.execServerFn('Export', _export, 'printQuitung');
+                        $scope.clear();
+                    }, false)
+                }
+
+                if (!$scope.data.customer._id) {
+                    $scope.newCustomer(function () {
+                        _order();
+                    })
+                } else {
                     _order();
-                })
-            } else {
-                _order();
-            }
-
+                }
+            });
         }
 
         window._order = function () {
