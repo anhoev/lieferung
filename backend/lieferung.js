@@ -1148,10 +1148,8 @@ const OrderView = cms.registerSchema({
 
         $scope.order = function () {
             if (!$scope.data.customer.phone || !$scope.data.export.item[0].food) return;
-            $http.get('api/exportId').then(function ({data}) {
-                $scope.data.export.Id = data.maxId;
-                $scope.data.export.date = new Date();
 
+            const _order = function () {
                 if ($scope.data.customer.fromInternet) {
                     $scope.data.export.fromInternet = true;
                     $scope.data.export.paymentOption = 'Unbar';
@@ -1176,6 +1174,17 @@ const OrderView = cms.registerSchema({
                 } else {
                     _order();
                 }
+            }
+
+            if ($scope.data.export.Id) {
+                return _order();
+            }
+
+            $http.get('api/exportId').then(function ({data}) {
+                $scope.data.export.Id = data.maxId;
+                $scope.data.export.date = new Date();
+
+                _order();
             });
         }
 
