@@ -1149,7 +1149,7 @@ const OrderView = cms.registerSchema({
         $scope.order = function () {
             if (!$scope.data.customer.phone || !$scope.data.export.item[0].food) return;
 
-            const _order = function () {
+            const __order = function () {
                 if ($scope.data.customer.fromInternet) {
                     $scope.data.export.fromInternet = true;
                     $scope.data.export.paymentOption = 'Unbar';
@@ -1177,14 +1177,14 @@ const OrderView = cms.registerSchema({
             }
 
             if ($scope.data.export.Id) {
-                return _order();
+                return __order();
             }
 
             $http.get('api/exportId').then(function ({data}) {
                 $scope.data.export.Id = data.maxId;
                 $scope.data.export.date = new Date();
 
-                _order();
+                __order();
             });
         }
 
