@@ -15,7 +15,7 @@
 
         <br>
 
-        <span ng-repeat="category in model.category">
+        <span ng-repeat="category in model.category  track by $index">
             <span class="text-violet">
                 {{category.name}}
             </span>
@@ -23,13 +23,6 @@
         </span>
 
         <br>
-
-        <span ng-repeat="addition in model.addition">
-            <span class="text-violet" style="color: indianred">
-                {{addition.name}}
-            </span>
-            &nbsp;&nbsp;
-        </span>
 
     </div>
 </div>

@@ -7,10 +7,13 @@ cms.resolvePath = (p) => `backend/${p}`;
 cms.mongoose.connect('mongodb://localhost/kasse');
 cms.data.webtype = cms.Enum.WebType.APPLICATION;
 
+process.chdir(require('path').resolve(__dirname, '../'));
+
 cms.use(require('cmsmon/mobile'));
 require('./lieferung');
+require('./kasse');
 
-// cms.data.online.autoOpenAdmin = true;
+cms.data.online.autoOpenAdmin = true;
 
 cms.menu = {
     top: '51px',
@@ -19,4 +22,4 @@ cms.menu = {
 
 cms.server('backend/en', '');
 
-cms.data.online.wsAddress = 'ws://7.10.181.46:8888';
+// cms.data.online.wsAddress = 'ws://localhost:8888';

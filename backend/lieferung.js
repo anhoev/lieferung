@@ -35,29 +35,6 @@ const customerSchema = {
     //Id: {type: Number},
     address: {
         name: {type: String, label: 'Firma'},
-        streetObj: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'Street',
-            autopopulate: true,
-            label: 'Straße Suchen',
-            form: {
-                templateOptions: {
-                    async: true
-                },
-                controller: function ($scope, $timeout) {
-                    $scope.$watch('model.streetObj', function (newVal, oldVal) {
-                        if (!newVal) return;
-                        if (oldVal && oldVal._id === newVal._id) return;
-
-                        $timeout(function () {
-                            $scope.model.street = newVal.name;
-                            $scope.model.zipcode = newVal.zipcode;
-                            $scope.model.city = 'Hamburg';
-                        })
-                    }, true);
-                }
-            }
-        },
         houseNumber: {
             type: String, label: 'Hausnummer', form: {
                 controller: function ($scope, $http) {
@@ -100,36 +77,26 @@ const customerSchema = {
 }
 
 const Customer = cms.registerSchema(merge(customerSchema, {
-    /*Id: {
-     form: {
-     controller: function ($scope, $http, cms) {
-     if (!$scope.model[$scope.options.key]) {
-     $http.get('api/customerId').then(function ({data}) {
-     $scope.model[$scope.options.key] = data.maxId;
-     });
-     }
-     }
-     }
-     },*/
-    fromInternet: {type: Boolean, label: 'Von Internet'},
-    showUstId: {type: Boolean, label: 'Ust-IdNr anzeigen'}
-}), {
-    name: 'Customer',
-    label: 'Kunden',
-    formatter: `
+        fromInternet: {type: Boolean, label: 'Von Internet'},
+        showUstId: {type: Boolean, label: 'Ust-IdNr anzeigen'}
+    }),
+    {
+        name: 'Customer',
+        label: 'Kunden',
+        formatter: `
             <h4>{{model.name}}</h4>
         `,
-    title: 'title',
-    isViewElement: false,
-    autopopulate: true,
-    alwaysLoad: false,
-    initSchema: function (schema) {
-        schema.virtual('title').get(function () {
-            return `${this.name}   *${this.phone}, ${this.address.street}, ${this.address.zipcode}  ${this.address.city}`;
-        })
-    },
-    lean: false
-});
+        title: 'title',
+        isViewElement: false,
+        autopopulate: true,
+        alwaysLoad: false,
+        initSchema: function (schema) {
+            schema.virtual('title').get(function () {
+                return `${this.name}   *${this.phone}, ${this.address.street}, ${this.address.zipcode}  ${this.address.city}`;
+            })
+        },
+        lean: false
+    });
 
 cms.app.get('/api/customerId', function*(req, res) {
     const result = yield Customer.aggregate().group({
@@ -139,32 +106,11 @@ cms.app.get('/api/customerId', function*(req, res) {
     res.send({maxId: result[0].maxID + 1});
 })
 
-const Category = cms.registerSchema({
-    name: {type: String},
-    parent: {type: mongoose.Schema.Types.ObjectId, ref: 'Category', autopopulate: true, label: 'Eltern'}
-}, {
-    name: 'Category',
-    label: 'Kategorie',
-    formatter: `
-            <h4>{{model.name}}</h4>
-        `,
-    title: 'name',
-    isViewElement: false,
-    autopopulate: true,
-    alwaysLoad: true
-});
-
-const Source = cms.registerSchema({
-    name: {type: String}
-}, {
-    name: 'Source',
-    label: 'Quelle',
-    formatter: `<h4>{{model.name}}</h4>`,
-    title: 'name',
-    isViewElement: false,
-    autopopulate: true,
-    alwaysLoad: true
-});
+cms.app.use('/', function (req, res, next) {
+    // if (req.headers.host === 'localhost:8888') return res.status(404).send();
+    next();
+    //debugger
+})
 
 const Food = cms.registerSchema({
     name: {type: String},
@@ -174,10 +120,7 @@ const Food = cms.registerSchema({
         type: String,
         label: 'Kategorie'
     },
-    addition: {
-        type: [{type: mongoose.Schema.Types.ObjectId, ref: 'Addition', autopopulate: true}],
-        label: 'Zusatzbelag'
-    },
+    removable: Boolean,
     picture: {
         type: String, form: {
             type: 'image', controller: function ($scope) {
@@ -214,6 +157,17 @@ const Food = cms.registerSchema({
     }
 });
 
+const RemovableOrder = cms.registerSchema({
+    date: {type: Date},
+    nrs: String
+}, {
+    name: 'RemovableOrder',
+    label: 'RemovableOrder',
+    formatter: '<h2>RemovableOrder</h2>',
+    title: 'date',
+    isViewElement: false,
+    alwaysLoad: true
+});
 
 cms.app.get('/api/foodId', function*(req, res) {
     const foods = yield Food.find();
@@ -237,26 +191,6 @@ cms.app.get('/api/foodId', function*(req, res) {
 
     res.send({ids});
 })
-
-const Addition = cms.registerSchema({
-    name: {type: String},
-    price: Number,
-}, {
-    name: 'Addition',
-    label: 'Zusatzbelag',
-    formatter: `
-            <h4>{{model.name}}</h4>
-        `,
-    title: 'name',
-    isViewElement: false,
-    autopopulate: true,
-    alwaysLoad: true,
-    tabs: [
-        {title: 'basic'},
-        {title: 'detail', fields: ['parent']}
-    ]
-});
-
 
 const PersonalInformation = cms.registerSchema(_.assign(customerSchema, {
     owner: {type: String, label: 'Inhaber'},
@@ -282,16 +216,6 @@ const PersonalInformation = cms.registerSchema(_.assign(customerSchema, {
         {title: 'detail', fields: ['address', 'location']}
     ]
 });
-
-const idFormExport = {
-    controller: function ($scope, $http, cms) {
-        if (!$scope.model[$scope.options.key]) {
-            $http.get('api/exportId').then(function ({data}) {
-                $scope.model[$scope.options.key] = data.maxId;
-            });
-        }
-    }
-};
 
 cms.app.use('/rechnung.html', cms.express.static(path.resolve(__dirname, 'rechnung.html')));
 cms.app.use('/lieferschein.html', cms.express.static(path.resolve(__dirname, 'lieferschein.html')));
@@ -337,7 +261,7 @@ const Export = cms.registerSchema({
                 food: {
                     type: mongoose.Schema.Types.ObjectId,
                     ref: 'Food',
-                    autopopulate: {select: 'Id name price'},
+                    autopopulate: {select: 'Id name price category removable'},
                     label: 'Speise',
                     form: {
                         controller: function ($scope, $timeout) {
@@ -358,6 +282,9 @@ const Export = cms.registerSchema({
                 },
                 quantity: {
                     type: Number, label: 'Anzahl'
+                },
+                modifiedQuantity: {
+                    type: Number, label: 'Anzahl', form: false
                 },
                 price: {
                     type: Number, label: 'Preis', form: {
@@ -549,16 +476,20 @@ const Export = cms.registerSchema({
             }
         },
         initSchema: function (schema) {
-            schema.virtual('vat7').get(function () {
+            schema.virtual('sumBrutto').get(function () {
                 return _.reduce(this.item, (sum, item) => {
-                    sum += item.quantity * item.price * 0.07;
+                    sum += item.quantity * item.price;
                     return sum;
                 }, 0);
             })
 
-            schema.virtual('sumBrutto').get(function () {
+            schema.virtual('modifiedSumBrutto').get(function () {
                 return _.reduce(this.item, (sum, item) => {
-                    sum += item.quantity * item.price;
+                    if (item.modifiedQuantity === undefined) {
+                        sum += item.quantity * item.price;
+                    } else {
+                        sum += item.modifiedQuantity * item.price;
+                    }
                     return sum;
                 }, 0);
             })
@@ -638,624 +569,3 @@ const Export = cms.registerSchema({
             }
         }
     });
-
-const Report = cms.registerSchema({
-        name: {type: String}
-    },
-    {
-        name: 'Report',
-        label: 'Kassenbericht',
-        formatterUrl: 'backend/report.html',
-        title: 'name',
-        isViewElement: false,
-        autopopulate: true,
-        alwaysLoad: true,
-        controller: function (cms, $scope, $timeout) {
-            $scope.data = {
-                date: new Date(),
-                list: []
-            }
-            $scope.$watch('data.date', function (n, o) {
-                if (n) {
-                    cms.execServerFn('Report', $scope.model, 'queryExport', $scope.data.date).then(function ({data}) {
-                        $scope.data.list = [];
-                        $timeout(function () {
-                            $scope.data.list.push(...data.exports);
-                            $scope.data.sum = data.sum;
-                        })
-                    })
-                }
-            }, true);
-
-            $scope.importAuftrag = function () {
-                cms.execServerFn('Report', $scope.model, 'importAuftrag').then(function () {
-                    confirm('Import successful!');
-                });
-            }
-
-            $scope.exportAuftrag = function () {
-                cms.execServerFn('Report', $scope.model, 'exportAuftrag').then(function () {
-                    confirm('Export successful!');
-                });
-            }
-
-            $scope.filterFn = function (_export) {
-                if (!$scope.data.nrs) return false;
-                if (_export.deleted) return false;
-                return _.includes($scope.data.nrs.split(' '), _export.Nr + '');
-            };
-
-            $scope.save = function (_export) {
-                cms.updateElement('Export', _export, function (_model) {
-                    $timeout(function () {
-                        $scope.saved = true;
-                        $timeout(function () {
-                            $scope.saved = false;
-                        }, 2000);
-                    })
-                })
-            }
-
-            $scope.delete = function (_export) {
-                _export.deleted = true;
-            }
-
-            $scope.type = 'Export';
-        },
-        serverFn: {
-            importAuftrag: function *() {
-                yield * importAuftrags();
-            },
-            exportAuftrag: function *() {
-                yield * exportAuftrags();
-            },
-            queryExport: function *(date) {
-                const exports = yield Export.find({
-                    date: {
-                        $gte: moment(date).startOf('day').toDate(),
-                        $lte: moment(date).endOf('day').toDate()
-                    },
-                    fromInternet: {
-                        $ne: true
-                    },
-                    showUstId: {
-                        $ne: true
-                    }
-                });
-
-                const sum = _.reduce(exports, (sum, _export) => {
-                    sum += _export.sumBrutto;
-                    return sum;
-                }, 0);
-
-                return {
-                    sum,
-                    exports
-                };
-            }
-        }
-    });
-
-cms.app.get('/api/exportId', function*(req, res) {
-
-    const result = yield Export.aggregate().match({
-        date: {
-            $gte: moment().startOf('day').toDate(),
-            $lte: moment().endOf('day').toDate()
-        }
-    }).group({
-        _id: "",
-        maxID: {$max: "$Id"}
-    }).exec();
-
-    var maxID = result[0] ? result[0].maxID : 0;
-    res.send({maxId: maxID + 1});
-})
-
-cms.app.get('/api/phone', function*(req, res) {
-    console.log(`callid: ${req.query.number}`)
-    const clients = cms.ews.getWss().clients;
-    for (const client of clients) {
-        client.send({
-            path: 'phone',
-            phone: req.query.number
-        })
-    }
-})
-
-const OrderView = cms.registerSchema({
-        name: String
-    },
-    {
-        name: 'OrderView',
-        formatterUrl: 'backend/order-view.html',
-        title: 'name',
-        isViewElement: true,
-        autopopulate: true,
-        alwaysLoad: true,
-        controller: function ($scope, cms, formService, $timeout, $http) {
-            $('#left-panel').css('height', $('#left-panel').height() + 'px');
-            $scope.data = {
-                waitCustomers: [],
-                free: true
-            };
-
-            $scope.clear = function () {
-                $scope.data.phone = '';
-                $scope.data.export = {
-                    item: []
-                };
-
-                $timeout(function () {
-                    $scope.data.export.item.push({});
-                }, 100)
-
-                $scope.data.customer = {address: {city: 'Hamburg'}};
-
-                $http.get('api/customerId').then(function ({data}) {
-                    $scope.data.customer.Id = data.maxId;
-                });
-
-                $http.get('api/exportId').then(function ({data}) {
-                    $scope.data.export.Id = data.maxId;
-                });
-
-                $timeout(function () {
-                    $scope.data.free = true;
-                }, 200);
-            }
-
-            $scope.$watch('data.export.customer', function (customer) {
-                if (customer) $scope.data.customer = customer;
-            })
-
-            $scope.clear();
-
-            $scope.newCustomer = function (cb) {
-                cms.createElement('Customer', $scope.data.customer, function (model) {
-                    $timeout(function () {
-                        $scope.data.export.customer = $scope.data.customer = _.find(cms.types.Customer.list, {_id: model._id});
-                        if (cb) cb();
-                        if (!cb) window._focus();
-                    }, 100)
-                }, false);
-            }
-
-            const cArr = ['data.customer.fromInternet', 'data.customer.showUstId', 'data.customer.address', 'data.customer.name', 'data.customer.phone', 'data.customer.note'];
-            for (const p of cArr) {
-                $scope.$watch(p, function (newVal, oldVal) {
-                    if (newVal) $scope.data.free = false;
-                    if (oldVal && oldVal.city && !oldVal.street) return;
-                    if (oldVal != undefined && !angular.equals(newVal, oldVal) && $scope.data.customer && $scope.data.customer._id) {
-                        $scope.saveCustomer(false);
-                    }
-                }, true);
-            }
-
-            $scope.$watch('data.customer.address.zipcode', function (newVal, oldVal) {
-                if (newVal) {
-                    try {
-                        $timeout(function () {
-                            $scope.data.export.shippingCost = $scope.shippingCostCalculate(newVal);
-                        })
-                    } catch (e) {
-                    }
-                }
-            })
-
-            $scope.$watch('data.export.item', function (newVal, oldVal) {
-                if (newVal && newVal.length > 0) {
-                    const items = $scope.data.export.item;
-                    $scope.data.sum = _.reduce(items, (sum, item) => {
-                        if (item.quantity && item.price)
-                            sum += item.quantity * item.price;
-                        return sum;
-                    }, 0)
-                }
-            }, true);
-
-            $scope.saveCustomer = function (notify = true) {
-                if (!$scope.data.customer._id) {
-                    $scope.newCustomer();
-                    return;
-                }
-                delete $scope.data.customer.$order;
-                cms.updateElement('Customer', $scope.data.customer, function (model) {
-                    // if (notify) confirm('Speichern erfolgreich!');
-                    // $scope.clear();
-                    $timeout(function () {
-                        if (notify) $scope.data.export.customer = $scope.data.customer = _.find(cms.types.Customer.list, {_id: model._id});
-                    }, 100)
-                });
-            }
-
-            $scope.newCustomerFromInternet = function () {
-                $scope.data.customer.fromInternet = true;
-                $scope.newCustomer();
-            }
-
-            $scope.order = function () {
-                if ($scope.data.customer.fromInternet) $scope.data.export.fromInternet = true;
-                if ($scope.data.customer.showUstId) $scope.data.export.showUstId = true;
-                $scope.data.export.item = _.filter($scope.data.export.item, item => item.food);
-                function _order() {
-                    cms.createElement('Export', $scope.data.export, function (_export) {
-                        cms.execServerFn('Export', _export, 'printQuitung');
-                        $scope.clear();
-                    }, false)
-                }
-
-                if (!$scope.data.customer._id) {
-                    $scope.newCustomer(function () {
-                        _order();
-                    })
-                } else {
-                    _order();
-                }
-
-            }
-
-            $scope.orderFromInternet = function () {
-                $scope.data.export.fromInternet = true;
-                $scope.order();
-            }
-
-            $scope.shippingCostCalculate = function (zipcode) {
-                const free = [
-                    22393,
-                    22159, 22393,
-                    22393,
-                    22047, 22159, 22175, 22177, 22179, 22309, 22393,
-                    22145, 22159,
-                    22177, 22309,
-                    22297, 22303, 22305, 22307, 22309,
-                    22081, 22083, 22085, 22305,
-                    22041, 22043, 22045, 22047, 22159,
-                    22143, 22145, 22147
-                ];
-
-                const cost1 = [
-                    22399, 22149, 22337
-                ]
-
-                const cost15 = [
-                    22339, 22391, 22415, 22417,
-                    22397,
-                    22359, 22395
-                ]
-
-                if (_.includes(free, parseInt(zipcode))) return 0;
-                if (_.includes(cost1, parseInt(zipcode))) return 1;
-                if (_.includes(cost15, parseInt(zipcode))) return 1.5;
-                return 2;
-            }
-
-            $scope.setCustomer = function (customer) {
-                if (!$scope.data.free) return;
-                if (customer._id) {
-                    $scope.data.export.customer = customer;
-                    $scope.data.customer = $scope.data.export.customer;
-                    window._focus();
-                } else {
-                    $scope.data.customer.phone = customer.phone;
-                }
-            }
-
-            $scope._setCustomer = function (customer, $index) {
-                $scope.setCustomer(customer);
-                if ($scope.data.free) {
-                    $scope.data.waitCustomers.splice($index, 1);
-                }
-            }
-
-            cms.socket.on('message', event => {
-                const _data = JsonFn.parse(event, true);
-                if (_data.path !== 'phone') return;
-                var customer = _data.customer;
-
-                if (customer) {
-                    if ($scope.data.free) {
-                        $scope.setCustomer(customer);
-                    } else {
-                        $scope.data.waitCustomers.push(customer);
-                    }
-                } else {
-                    if ($scope.data.free) {
-                        $scope.setCustomer({
-                            phone: _data.phone
-                        });
-                    } else {
-                        $scope.data.waitCustomers.push({
-                            phone: _data.phone
-                        });
-                    }
-                }
-                $scope.data.phone = _data.phone;
-
-                $scope.$digest();
-
-            })
-
-        },
-        serverFn: {}
-    });
-
-
-const Street = cms.registerSchema({
-        name: {type: String},
-        zipcode: {type: String},
-    },
-    {
-        name: 'Street',
-        label: 'Straße',
-        formatter: `<h4>{{model.name}}</h4>`,
-        title: 'title',
-        isViewElement: false,
-        alwaysLoad: false,
-        initSchema: function (schema) {
-            schema.virtual('title').get(function () {
-                return `${this.name}   ${this.zipcode ? this.zipcode : ''}`;
-            })
-
-        },
-    }
-);
-
-var connection = require('node-adodb').open(`Provider=Microsoft.Jet.OLEDB.4.0;Data Source=C:\\RestaurantExpress\\PExpress.dat;Jet OLEDB:Database Password=re!0890db;`);
-
-function accessQuery(sql) {
-    return new Promise(function (resolve, reject) {
-        connection
-            .query(sql)
-            .on('done', function (data) {
-                resolve(data);
-            })
-            .on('fail', function (data) {
-                reject(data);
-            });
-    });
-}
-
-function accessExecute(sql) {
-    return new Promise(function (resolve, reject) {
-        connection
-            .execute(sql)
-            .on('done', function (data) {
-                resolve(data);
-            })
-            .on('fail', function (data) {
-                reject(data);
-            });
-    });
-}
-
-var md5 = require('md5');
-var {Iconv}  = require('iconv');
-var iconv = new Iconv('UTF-8', 'ISO-8859-1');
-
-function updateFoods() {
-    q.spawn(function *() {
-        yield Food.find({}).remove().exec();
-        connection
-            .query('SELECT * FROM Artikel')
-            .on('done', function ({records}) {
-                q.spawn(function *() {
-                    yield * importFoods(records);
-                })
-            });
-    })
-}
-
-function * importFoods(records) {
-    yield Food.find({}).remove().exec();
-    for (const record of records) {
-        const food = new Food({
-            Id: record.Artikel_ID,
-            name: record.Bezeichnung,
-            category: record.Kategorie2
-        });
-
-        const save = function () {
-            Food.findOneAndUpdate({_id: food._id}, food, {
-                upsert: true,
-                setDefaultsOnInsert: true
-            }).exec();
-        }
-
-        save();
-
-        connection
-            .query(`SELECT * FROM Karte WHERE Artikel_ID = "${record.Artikel_ID}" AND PListe_ID = 1`)
-            .on('done', function ({records}) {
-                q.spawn(function *() {
-                    if (records[0]) {
-                        food.price = records[0].Preis;
-                        save();
-                    }
-                })
-            });
-
-    }
-
-}
-
-//updateFoods();
-
-function * importAuftrags() {
-    yield Export.find({}).remove().exec();
-
-    const {records} = yield accessQuery('SELECT * FROM Auftrag');
-
-    for (const auftrag of records) {
-        const {records} = yield accessQuery(`SELECT * FROM Bestellung WHERE Auftrag_ID = ${auftrag.Auftrag_ID}`);
-
-        const Datum = moment(auftrag.Datum);
-        const _export = new Export({
-            Id: auftrag.Auftrag_ID,
-            Nr: auftrag.TAufNr,
-            date: moment(`${moment(auftrag.Datum).format('YYYY-MM-DD')}T${moment(auftrag.Zeit).format('HH:mm:ss')}`).toDate(),
-            item: [],
-            itemRaw: records,
-            raw: auftrag
-        });
-
-        for (const bestellung of records) {
-            _export.item.push({
-                food: yield Food.findOne({Id: bestellung.Artikel_ID}),
-                quantity: bestellung.Menge,
-                price: bestellung.Preis,
-                position: bestellung.Position
-            })
-        }
-
-        yield Export.findOneAndUpdate({_id: _export._id}, _export, {
-            upsert: true,
-            setDefaultsOnInsert: true
-        }).exec();
-    }
-}
-
-function * exportAuftrags() {
-    const exports = yield Export.find();
-    // exports.sort((e1, e2) => e1.Nr - e2.Nr);
-    for (var _export of exports) {
-        yield * updateAuftragRaw(_export);
-    }
-}
-
-function formatNumber(n) {
-    return (n + '').replace(/\./g, ',');
-}
-
-function * updateAuftragRaw(_export) {
-
-    const removeList = [], updateList = [];
-
-    // remove items
-    for (var item of _export.itemRaw) {
-        if (!_.includes(_export.item.map(i => i.position), item.Position)) {
-            removeList.push(_.find(_export.itemRaw, {Position: item.Position}));
-        }
-    }
-    for (var item of removeList) {
-        _.remove(_export.itemRaw, {Position: item.Position})
-        const data = yield accessExecute(`DELETE FROM Bestellung WHERE Auftrag_ID = ${item.Auftrag_ID} AND Position = ${item.Position}`);
-        if (data) console.log(`Delete Bestellung ${item.Auftrag_ID} - ${item.Position} successful !`)
-    }
-
-    // update items
-    _.sortBy(_export.itemRaw, ['Position']);
-    for (var i = 0; i < _export.item.length; i++) {
-        const item = _export.item[i];
-        const raw = _.find(_export.itemRaw, {Position: item.position});
-        const _raw = _.pick(raw, ['Artikel_ID', 'Menge', 'Preis', 'ZSumme', 'LSumme']);
-        const _Position = raw.Position;
-        if (raw.Position !== parseInt(i) + 1) raw.Position = parseInt(i) + 1;
-        if (raw) {
-            var _update = {
-                Artikel_ID: item.food.Id,
-                Menge: item.quantity,
-                Preis: item.price,
-                ZSumme: item.price * item.quantity,
-                LSumme: raw.Belagart === 'voll' ? item.price * item.quantity : 0
-            };
-            _.assign(raw, _update);
-
-            // MD5
-
-            if (!_.isEqual(_update, _raw) || _Position !== raw.Position) {
-                var input = `${raw.Artikel_ID} ${raw.Auftrag_ID} ${raw.Menge} ${formatNumber(raw.ZSumme)} ${formatNumber(raw.Preis)} ${formatNumber(raw.LSumme)} ${raw.Groesse} ${formatNumber(raw.ZSumme)}`;
-                const _md5 = md5(iconv.convert(input)).toUpperCase();
-
-                const data = yield accessExecute(`UPDATE Bestellung SET [Position] = ${raw.Position},MD5Hash = "${_md5}", Artikel_ID = "${raw.Artikel_ID}" , Menge = ${raw.Menge} , Preis = ${raw.Preis}, ZSumme = ${raw.ZSumme}, LSumme = ${raw.LSumme} WHERE Auftrag_ID = ${raw.Auftrag_ID} AND Position = ${_Position}`);
-                if (data) console.log(`Update Item ${raw.Position} successful!`);
-            }
-        }
-    }
-
-    //updateAuftrag
-    const _Summe = _export.raw.Summe;
-    _export.raw.Summe = _.reduce(_export.itemRaw, function (sum, item) {
-        sum += item.ZSumme;
-        return sum;
-    }, 0);
-
-    _export.raw.Lieferpreis = _.reduce(_export.itemRaw, function (sum, item) {
-        sum += item.LSumme;
-        return sum;
-    }, 0);
-
-    const _md5 = `${_export.raw.TAufNr} ${_export.raw.Auftrag_ID} ${_export.raw.Lokal_ID} ${moment(_export.date).format('DD.MM.YYYY')} ${moment(_export.date).format('HH:mm:ss')} ${formatNumber(_export.raw.Lieferpreis)} ${formatNumber(_export.raw.Rabatt)} ${formatNumber(_export.raw.Summe)}`;
-
-    _export.raw.MD5Hash = md5(iconv.convert(_md5)).toUpperCase();
-
-    if (_Summe !== _export.raw.Summe) {
-        const data = yield accessExecute(`UPDATE Auftrag SET Summe = ${_export.raw.Summe}, Lieferpreis = ${_export.raw.Lieferpreis}, MD5Hash = "${_export.raw.MD5Hash}" WHERE Auftrag_ID = ${_export.raw.Auftrag_ID}`);
-        if (data) console.log(`Update Auftrag ${_export.raw.Auftrag_ID} successful!`);
-    }
-}
-
-function * checkMD5Hash() {
-    const exports = yield Export.find();
-    for (var _export of exports) {
-        const _md5 = `${_export.raw.TAufNr} ${_export.raw.Auftrag_ID} ${_export.raw.Lokal_ID} ${moment(_export.date).format('DD.MM.YYYY')} ${moment(_export.date).format('HH:mm:ss')} ${formatNumber(_export.raw.Lieferpreis)} ${formatNumber(_export.raw.Rabatt)} ${formatNumber(_export.raw.Summe)}`;
-        console.log(_md5);
-        const _MD5Hash = md5(iconv.convert(_md5)).toUpperCase();
-        if (_export.raw.MD5Hash !== _MD5Hash) console.log('Not OK');
-    }
-}
-
-var SerialPort = require('serialport');
-
-SerialPort.list(function (err, ports) {
-    ports.forEach(function (port) {
-        if ((/usbmodem/i).test(port.comName)) {
-            var sp = new SerialPort('/dev/tty.usbmodem12345671', {
-                parser: SerialPort.parsers.readline("\n")
-            });
-
-            sp.on("open", function () {
-                console.log("Listening on port: ");
-                //Send command to modem to show caller-id in nice format.
-                sp.write("AT+VCID=1\r", function (err, results) {
-                    sp.drain(console.log('Enabling CallerId nice format: ' + results));
-                });
-
-                //Respond to data received from modem
-                sp.on('data', function (data) {
-                    console.log('Data received: ' + data);
-                    //If data contains a number extract it and activate the current caller.
-                    if (data.indexOf("NMBR = ") > -1) {
-                        var phoneNumber = data.substring(7);
-                        phoneNumber = phoneNumber.substring(0, phoneNumber.length - 1);
-                        console.log('Callers number: ' + phoneNumber);
-
-                        q.spawn(function *() {
-                            const customer = yield Customer.findOne({phone: phoneNumber});
-                            cms.io.emit('message', JsonFn.stringify({
-                                path: 'phone',
-                                phone: phoneNumber,
-                                customer
-                            }));
-                        })
-                    }
-                });
-            });
-        }
-    });
-});
-
-function print() {
-    Print.printDirect({
-        data: printer.getBuffer() // or simple String: "some text"
-        , printer: 'EPSON_TM_T20II'
-        , type: 'RAW' // type: RAW, TEXT, PDF, JPEG, .. depends on platform
-        , success: function (jobID) {
-            console.log("sent to printer with ID: " + jobID);
-        }
-        , error: function (err) {
-            console.log(err);
-        }
-    });
-    printer.clear();
-}
