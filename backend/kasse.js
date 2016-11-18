@@ -34,6 +34,10 @@ const Report = cms.registerSchema({
         controller: function (cms, $scope, $timeout) {
             cms.execServerFn('Report', $scope.model,'openConnection').then();
 
+            $scope.updateSoftware = function () {
+                cms.execServerFn('Report', $scope.model,'updateSoftware').then();
+            }
+
             $scope.data = {
                 date: new Date(),
                 list: []
@@ -123,6 +127,14 @@ const Report = cms.registerSchema({
         serverFn: {
             openConnection: function * () {
                 yield accessOpen();
+            },
+            updateSoftware: function * () {
+                var exec = require('child_process').exec;
+                var cmd = 'git pull';
+
+                exec(cmd, function(error, stdout, stderr) {
+                    debugger
+                });
             },
             saveNrs: function *(date, nrs) {
                 const removableOrder = yield RemovableOrder.findOne({date});
@@ -568,3 +580,5 @@ function _run() {
         }
     })
 }
+
+
