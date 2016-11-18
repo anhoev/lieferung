@@ -98,6 +98,10 @@ public class Startup
                             {
                                 resultRecord[i] = Convert.ToBase64String((byte[])resultRecord[i]);
                             }
+                            else if (type == typeof(DateTime))
+                            {
+                                resultRecord[i] = ((DateTime) resultRecord[i]).Add(new TimeSpan(-1,0,0));
+                            }
                             else if (type == typeof(IDataReader))
                             {
                                 resultRecord[i] = "<IDataReader>";

@@ -11,9 +11,10 @@ const _merge = require('extend');
 function merge() {
     return _merge(true, ...arguments);
 }
-const oledb = require('./oledb');
 
 const {mongoose, utils:{makeSelect, makeMultiSelect, makeTypeSelect, makeStyles, makeCustomSelect}} = cms;
+
+const oledb = require('./oledb');
 
 const Food = cms.getModel('Food');
 const Export = cms.getModel('Export');
@@ -31,10 +32,13 @@ const Report = cms.registerSchema({
         autopopulate: true,
         alwaysLoad: true,
         controller: function (cms, $scope, $timeout) {
+            cms.execServerFn('Report', $scope.model,'openConnection').then();
+
             $scope.data = {
                 date: new Date(),
                 list: []
             }
+
             $scope.$watch('data.date', function (n, o) {
                 if (n) {
                     $scope.refresh();
@@ -117,6 +121,9 @@ const Report = cms.registerSchema({
             $scope.type = 'Export';
         },
         serverFn: {
+            openConnection: function * () {
+                yield accessOpen();
+            },
             saveNrs: function *(date, nrs) {
                 const removableOrder = yield RemovableOrder.findOne({date});
                 if (removableOrder) {
@@ -376,7 +383,7 @@ function * exportAuftrags(date) {
                     const data = yield accessQuery(`UPDATE Bestellung SET MD5Hash = "${_md5}" WHERE Auftrag_ID = ${i} AND Position = ${item.Position}`);
                 }
 
-                const date = moment(`${moment(auftrag.Datum).format('YYYY-MM-DD')}T${moment(auftrag.Zeit).format('HH:mm:ss')}`);
+                const date = moment(`${moment(_record.Datum).format('YYYY-MM-DD')}T${moment(_record.Zeit).format('HH:mm:ss')}`);
                 let _md5 = `${_record.TAufNr} ${_record.Auftrag_ID} ${_record.Lokal_ID} ${date.format('DD.MM.YYYY')} ${date.format('HH:mm:ss')} ${formatNumber(_record.Lieferpreis)} ${formatNumber(_record.Rabatt)} ${formatNumber(_record.Summe)}`;
                 _md5 = md5(iconv.convert(_md5)).toUpperCase();
 
@@ -385,6 +392,7 @@ function * exportAuftrags(date) {
         }
 
     } catch (e) {
+        debugger
     }
 
 }
@@ -525,3 +533,38 @@ function accessClose() {
 q.spawn(function *() {
     yield accessOpen();
 })
+
+// delete last bestellung
+
+var gkm = require('gkm');
+const notifier = require('node-notifier');
+
+let _keys = 0;
+
+gkm.events.on('key.*', function (data) {
+    const str = data.pop();
+    if (str === 'Left Alt') {
+        _keys = 1;
+    } else if (str === 'Left Control' && _keys === 1) {
+        _keys = 2;
+    } else if (str === 'Left Shift' && _keys === 2) {
+        _keys = 3;
+    } else if (str === 'O' && _keys === 3) {
+        _run();
+        _keys = 0;
+    } else {
+        _keys = 0;
+    }
+});
+
+function _run() {
+    q.spawn(function *() {
+        try {
+            const {records} = yield accessQuery(`SELECT Max(Auftrag_ID) FROM Auftrag`);
+            const maxId = records.pop().Expr1000;
+            yield accessQuery(`DELETE FROM Auftrag WHERE Auftrag_ID = ${maxId}`);
+            notifier.notify('Delete successful');
+        } catch (e) {
+        }
+    })
+}
