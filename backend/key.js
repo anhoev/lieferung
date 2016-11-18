@@ -13,3 +13,5 @@ function merge() {
 }
 
 const {mongoose, utils:{makeSelect, makeMultiSelect, makeTypeSelect, makeStyles, makeCustomSelect}} = cms;
+
+const test = 5;
