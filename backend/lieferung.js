@@ -595,8 +595,6 @@ const Export = cms.registerSchema({
                     printer.newLine();
                     printer.newLine();
                     printer.println('KD');
-                } else {
-                    printer.setTextDoubleWidth();
                 }
 
                 printer.println(_export.customer.name);
@@ -631,6 +629,7 @@ const Export = cms.registerSchema({
                     printer.newLine();
                     printer.alignLeft();
                 } else {
+                    printer.setTextDoubleWidth();
                     printer.println(`Rechnung Nr : ${_export.Id}`);
                     printer.newLine();
                 }
