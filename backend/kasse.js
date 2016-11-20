@@ -31,11 +31,13 @@ const Report = cms.registerSchema({
         isViewElement: false,
         autopopulate: true,
         alwaysLoad: true,
-        controller: function (cms, $scope, $timeout) {
-            cms.execServerFn('Report', $scope.model,'openConnection').then();
+        controller: function (cms, $scope, $timeout, Notification) {
+            cms.execServerFn('Report', $scope.model, 'openConnection').then();
 
             $scope.updateSoftware = function () {
-                cms.execServerFn('Report', $scope.model,'updateSoftware').then();
+                cms.execServerFn('Report', $scope.model, 'updateSoftware').then(function (result) {
+                    Notification.primary(result.data);
+                });
             }
 
             $scope.data = {
@@ -125,16 +127,18 @@ const Report = cms.registerSchema({
             $scope.type = 'Export';
         },
         serverFn: {
-            openConnection: function * () {
+            openConnection: function *() {
                 yield accessOpen();
             },
-            updateSoftware: function * () {
-                var exec = require('child_process').exec;
+            updateSoftware: function *() {
+                process.chdir(require('path').resolve(__dirname, '../'));
                 var cmd = 'git pull';
-
-                exec(cmd, function(error, stdout, stderr) {
-                    debugger
-                });
+                try {
+                    var out = require('child_process').execSync(cmd, 'utf-8');
+                    return out.toString();
+                } catch (e) {
+                    return e.message;
+                }
             },
             saveNrs: function *(date, nrs) {
                 const removableOrder = yield RemovableOrder.findOne({date});
@@ -582,3 +586,23 @@ function _run() {
 }
 
 
+// printer
+
+var Printer = require('ipp-printer')
+
+var printer = new Printer({name: 'Nodejs',port: 65261})
+
+printer.on('job', function (job) {
+    console.log('[job %d] Printing document: %s', job.id, job.name)
+
+    var data = '';
+    var chunk;
+
+    job.on('readable', function () {
+        while ((chunk = job.read()) != null) data += chunk;
+    });
+
+    job.on('end', function () {
+        console.log('[job %d] Document saved as %s', job.id, job.name)
+    })
+})
