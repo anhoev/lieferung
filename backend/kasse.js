@@ -164,8 +164,8 @@ const Report = cms.registerSchema({
             exportAuftrag: function *(date) {
                 let exports = yield Export.find({
                     date: {
-                        $gte: moment(date).startOf('day').toDate(),
-                        $lte: moment(date).endOf('day').toDate()
+                        $gte: moment(date).hour(4).toDate(),
+                        $lte: moment(date).add(1, 'day').hour(4).toDate()
                     }
                 });
                 for (var _export of exports) {
@@ -206,18 +206,18 @@ const Report = cms.registerSchema({
             queryExport: function *(date) {
                 const exports = yield Export.find({
                     date: {
-                        $gte: moment(date).startOf('day').toDate(),
-                        $lte: moment(date).endOf('day').toDate()
+                        $gte: moment(date).hour(4).toDate(),
+                        $lte: moment(date).add(1, 'day').hour(4).toDate()
                     }
                 });
 
                 const sum = _.reduce(exports, (sum, _export) => {
-                    sum += _export.sumBrutto;
+                    if (!_export.storno) sum += _export.sumBrutto;
                     return sum;
                 }, 0);
 
                 const modifiedSum = _.reduce(exports, (sum, _export) => {
-                    sum += _export.modifiedSumBrutto;
+                    if (!_export.storno) sum += _export.modifiedSumBrutto;
                     return sum;
                 }, 0);
 
@@ -338,7 +338,10 @@ function * _importFoods(records) {
 function * importAuftrags(date) {
     yield Export.find({}).remove().exec();
 
-    const {records} = yield accessQuery(`SELECT * FROM Auftrag WHERE Datum >= #${moment(date).format('YYYY-MM-DD')} 00:00:00# AND Datum <= #${moment(date).format('YYYY-MM-DD')} 23:59:59#`);
+    let {records:records_1} = yield accessQuery(`SELECT * FROM Auftrag WHERE Datum = #${moment(date).format('YYYY-MM-DD')}# AND Zeit >= #04:00:00#`);
+    let {records:records_2} = yield accessQuery(`SELECT * FROM Auftrag WHERE Datum = #${moment(date).add(1, 'day').format('YYYY-MM-DD')}# AND Zeit < #04:00:00#`);
+
+    const records = records_1.concat(records_2);
 
     for (const auftrag of records) {
         const {records} = yield accessQuery(`SELECT * FROM Bestellung WHERE Auftrag_ID = ${auftrag.Auftrag_ID}`);
@@ -348,6 +351,7 @@ function * importAuftrags(date) {
         const _export = new Export({
             Id: auftrag.Auftrag_ID,
             Nr: auftrag.TAufNr,
+            storno: auftrag.Storno,
             date: moment(`${moment(auftrag.Datum).format('YYYY-MM-DD')}T${moment(auftrag.Zeit).format('HH:mm:ss')}`).toDate(),
             item: [],
             itemRaw: records,
@@ -590,7 +594,7 @@ function _run() {
 
 var Printer = require('ipp-printer')
 
-var printer = new Printer({name: 'Nodejs',port: 65261})
+var printer = new Printer({name: 'Nodejs', port: 65261})
 
 printer.on('job', function (job) {
     console.log('[job %d] Printing document: %s', job.id, job.name)

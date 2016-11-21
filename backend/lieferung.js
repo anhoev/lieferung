@@ -234,6 +234,7 @@ const Export = cms.registerSchema({
         shipDate: {type: Date, default: Date.now(), label: 'Lieferdatum'},
         Id: String,
         Nr: Number,
+        storno : Boolean,
         deleted: {type: Boolean, form: false},
         raw: {type: cms.mongoose.Schema.Types.Mixed, form: false},
         paymentOption: {type: String, form: makeSelect('EC', 'Barverkauf', 'Überweisung'), label: 'Zahlungsmethod'},
