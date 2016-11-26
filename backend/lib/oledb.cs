@@ -21,6 +21,7 @@ public class Startup
 {
     OleDbConnection connection;
 
+
     public async Task<object> Invoke(IDictionary<string, object> parameters)
     {
         string cmd = ((string)parameters["cmd"]);
@@ -59,6 +60,7 @@ public class Startup
                 case "insert":
                 case "update":
                 case "delete":
+                case "alter ":
                     return await this.ExecuteNonQuery(commandString);
                     break;
                 default:

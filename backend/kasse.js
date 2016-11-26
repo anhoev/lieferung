@@ -31,6 +31,7 @@ const Report = cms.registerSchema({
         isViewElement: false,
         autopopulate: true,
         alwaysLoad: true,
+        //nav: Report Controller
         controller: function (cms, $scope, $timeout, Notification) {
             cms.execServerFn('Report', $scope.model, 'openConnection').then();
 
@@ -83,7 +84,7 @@ const Report = cms.registerSchema({
 
             $scope.showAll = function () {
                 $scope.data.nrs = _.reduce($scope.data.list, function (str, _export) {
-                    return `${str}${_export.Nr} `;
+                    return `${str}${_export.Id} `;
                 }, '');
             }
 
@@ -97,7 +98,7 @@ const Report = cms.registerSchema({
             $scope.filterFn = function (_export) {
                 if (!$scope.data.nrs) return false;
                 if (_export.deleted) return false;
-                return _.includes($scope.data.nrs.split(' '), _export.Nr + '');
+                return _.includes($scope.data.nrs.split(' '), _export.Id + '');
             };
 
             $scope.save = function (_export) {
@@ -152,6 +153,7 @@ const Report = cms.registerSchema({
             importFoods: function *() {
                 yield * importFoods();
             },
+            // nav: importAuftrag
             importAuftrag: function *(date) {
                 yield * importAuftrags(date);
                 return yield RemovableOrder.findOne({date: moment(date).startOf('day').toDate()});
@@ -161,6 +163,7 @@ const Report = cms.registerSchema({
                 _export.deleted = true;
                 yield _export.save();
             },
+            //nav: export Auftrag 1
             exportAuftrag: function *(date) {
                 let exports = yield Export.find({
                     date: {
@@ -171,38 +174,46 @@ const Report = cms.registerSchema({
                 for (var _export of exports) {
                     if (_export.deleted) {
                         yield _export.remove();
-                        const data = yield accessQuery(`DELETE FROM Auftrag WHERE Auftrag_ID = ${_export.Id}`);
+                        yield accessQuery(`DELETE FROM Rechnungen WHERE ID = ${_export.Id}`);
+                        yield accessQuery(`DELETE FROM Umsaetze WHERE Rechnungsnummer = ${_export.Id}`);
                         continue
                     }
+
                     for (var item of _export.item) {
                         if (item.modifiedQuantity !== undefined) {
                             item.quantity = item.modifiedQuantity;
                         }
                     }
+
                     yield  _export.save();
                 }
 
+                // renumber for rechnungen
+                const removableOrder = yield RemovableOrder.findOne({date: moment(date).startOf('date').toDate()}).lean();
+                const firstId = removableOrder.firstId;
+
                 exports = yield Export.find({
                     date: {
-                        $gte: moment(date).startOf('day').toDate(),
-                        $lte: moment(date).endOf('day').toDate()
+                        $gte: moment(date).hour(4).toDate(),
+                        $lte: moment(date).add(1, 'day').hour(4).toDate()
                     }
                 });
 
-                exports.sort((e1, e2) => e1.Nr - e2.Nr);
+                exports.sort((e1, e2) => e1.Id - e2.Id);
                 for (let i = 0; i < exports.length; i++) {
                     const _export = exports[i];
-                    if (_export.Nr !== i + 1) {
-                        const id = (_export.Id - (_export.Nr - i - 1));
-                        _export.Nr = i + 1;
+                    if (_export.Id !== i + firstId) {
+                        const id = i + firstId;
                         _export.Id = id;
                         yield _export.save();
-                        yield accessQuery(`UPDATE Auftrag SET [Auftrag_ID] = ${id}, TAufNr = ${_export.Nr} WHERE Auftrag_ID = ${_export.raw.Auftrag_ID}`);
+                        yield accessQuery(`UPDATE Rechnungen SET Rechnungsnummer = ${id} WHERE ID = ${_export.raw.ID}`);
+                        yield accessQuery(`UPDATE Umsaetze SET Rechnungsnummer = ${id} WHERE ID = ${_export.raw.ID}`);
                     }
                 }
 
                 yield * exportAuftrags(date);
             },
+            // nav: queryExport
             queryExport: function *(date) {
                 const exports = yield Export.find({
                     date: {
@@ -221,7 +232,7 @@ const Report = cms.registerSchema({
                     return sum;
                 }, 0);
 
-                exports.sort((e1, e2) => e1.Nr - e2.Nr);
+                exports.sort((e1, e2) => e1.Id - e2.Id);
 
                 return {
                     modifiedSum,
@@ -283,7 +294,7 @@ const Report = cms.registerSchema({
         }
     });
 
-var accessPath = `Provider=Microsoft.Jet.OLEDB.4.0;Data Source=C:\\RestaurantExpress\\PExpress.dat;Jet OLEDB:Database Password=re!0890db;`;
+var accessPath = `Provider=Microsoft.Jet.OLEDB.4.0;Data Source=C:\\BONitFlexX\\Umsaetze.mdb;Jet OLEDB:Database Password=213819737111;`;
 var connection = require('node-adodb').open(accessPath);
 
 var md5 = require('md5');
@@ -334,25 +345,33 @@ function * _importFoods(records) {
 }
 
 //updateFoods();
-
+//nav: importAuftrag
 function * importAuftrags(date) {
     yield Export.find({}).remove().exec();
 
-    let {records:records_1} = yield accessQuery(`SELECT * FROM Auftrag WHERE Datum = #${moment(date).format('YYYY-MM-DD')}# AND Zeit >= #04:00:00#`);
-    let {records:records_2} = yield accessQuery(`SELECT * FROM Auftrag WHERE Datum = #${moment(date).add(1, 'day').format('YYYY-MM-DD')}# AND Zeit < #04:00:00#`);
+    let {records} = yield accessQuery(`SELECT * FROM Rechnungen WHERE Datum Between #${moment(date).format('YYYY-MM-DD')} 04:00:00# AND #${moment(date).add(1, 'day').format('YYYY-MM-DD')} 04:00:00#`);
 
-    const records = records_1.concat(records_2);
+    if (!records || records.length === 0) return;
+
+    records.sort((r1, r2) => r1.Rechnungsnummer - r2.Rechnungsnummer);
+
+    const removableOrder = yield RemovableOrder.findOne({date: moment(date).startOf('date').toDate()});
+
+    if (removableOrder) {
+        removableOrder.firstId = records[0].Rechnungsnummer;
+        yield removableOrder.save();
+    } else {
+        yield RemovableOrder.create({date, firstId: records[0].Rechnungsnummer});
+    }
 
     for (const auftrag of records) {
-        const {records} = yield accessQuery(`SELECT * FROM Bestellung WHERE Auftrag_ID = ${auftrag.Auftrag_ID}`);
-        records.sort((r1, r2) => r1.Position - r2.Position);
+        const {records} = yield accessQuery(`SELECT * FROM Umsaetze WHERE Rechnungsnummer = ${auftrag.Rechnungsnummer}`);
+        records.sort((r1, r2) => r1.Rechnungsnummer - r2.Rechnungsnummer);
 
         const Datum = moment(auftrag.Datum);
         const _export = new Export({
-            Id: auftrag.Auftrag_ID,
-            Nr: auftrag.TAufNr,
-            storno: auftrag.Storno,
-            date: moment(`${moment(auftrag.Datum).format('YYYY-MM-DD')}T${moment(auftrag.Zeit).format('HH:mm:ss')}`).toDate(),
+            Id: auftrag.Rechnungsnummer,
+            date: auftrag.Datum,
             item: [],
             itemRaw: records,
             raw: auftrag
@@ -360,10 +379,10 @@ function * importAuftrags(date) {
 
         for (const bestellung of records) {
             _export.item.push({
-                food: yield Food.findOne({Id: bestellung.Artikel_ID}),
+                food: bestellung.Bezeichnung,
                 quantity: bestellung.Menge,
-                price: bestellung.Preis,
-                position: bestellung.Position
+                price: bestellung.Verkaufspreis,
+                Id: bestellung.ID
             })
         }
 
@@ -377,37 +396,24 @@ function * importAuftrags(date) {
 function * exportAuftrags(date) {
     const exports = yield Export.find();
     for (var _export of exports) {
-        yield * updateAuftragRaw(_export);
+        // yield * updateAuftragRaw(_export);
     }
 
     // change all Ids for the next days
 
     try {
-        exports.sort((e1, e2) => e1.Nr - e2.Nr);
+        exports.sort((e1, e2) => e1.Id - e2.Id);
         const _export = exports.pop();
         const maxId = parseInt(_export.Id);
 
-        const {records} = yield accessQuery(`SELECT * FROM Auftrag WHERE Datum > #${moment(date).format('YYYY-MM-DD')} 23:59:59#`);
-        records.sort((r1, r2) => r1.Auftrag_ID - r2.Auftrag_ID);
+        const {records} = yield accessQuery(`SELECT * FROM Rechnungen WHERE Datum > #${moment(date).add(1, 'day').format('YYYY-MM-DD')} 04:00:00#`);
+        records.sort((r1, r2) => r1.Rechnungsnummer - r2.Rechnungsnummer);
 
         for (let i = maxId + 1; i < maxId + records.length + 1; i++) {
             const _record = records[i - maxId - 1];
-            if (_record.Auftrag_ID > i) {
-                yield accessQuery(`UPDATE Auftrag SET [Auftrag_ID] = ${i} WHERE Auftrag_ID = ${_record.Auftrag_ID}`);
-                // update MD5
-
-                const {records: items} = yield accessQuery(`SELECT * FROM Bestellung WHERE Auftrag_ID = ${i}`);
-                for (var item of items) {
-                    var input = `${item.Artikel_ID} ${i} ${item.Menge} ${formatNumber(item.ZSumme)} ${formatNumber(item.Preis)} ${formatNumber(item.LSumme)} ${item.Groesse} ${formatNumber(item.ZSumme)}`;
-                    const _md5 = md5(iconv.convert(input)).toUpperCase();
-                    const data = yield accessQuery(`UPDATE Bestellung SET MD5Hash = "${_md5}" WHERE Auftrag_ID = ${i} AND Position = ${item.Position}`);
-                }
-
-                const date = moment(`${moment(_record.Datum).format('YYYY-MM-DD')}T${moment(_record.Zeit).format('HH:mm:ss')}`);
-                let _md5 = `${_record.TAufNr} ${_record.Auftrag_ID} ${_record.Lokal_ID} ${date.format('DD.MM.YYYY')} ${date.format('HH:mm:ss')} ${formatNumber(_record.Lieferpreis)} ${formatNumber(_record.Rabatt)} ${formatNumber(_record.Summe)}`;
-                _md5 = md5(iconv.convert(_md5)).toUpperCase();
-
-                const data = yield accessQuery(`UPDATE Auftrag SET MD5Hash = "${_md5}" WHERE Auftrag_ID = ${i}`);
+            if (_record.Rechnungsnummer > i) {
+                yield accessQuery(`UPDATE Rechnungen SET [Rechnungsnummer] = ${i} WHERE Rechnungsnummer = ${_record.Rechnungsnummer}`);
+                yield accessQuery(`UPDATE Umsaetze SET [Rechnungsnummer] = ${i} WHERE Rechnungsnummer = ${_record.Rechnungsnummer}`);
             }
         }
 
@@ -427,18 +433,19 @@ function * updateAuftragRaw(_export) {
 
     // remove items
     for (var item of _export.itemRaw) {
-        if (!_.includes(_export.item.map(i => i.position), item.Position)) {
-            removeList.push(_.find(_export.itemRaw, {Position: item.Position}));
+        if (!_.includes(_export.item.map(i => i.Id), item.Id)) {
+            removeList.push(_.find(_export.itemRaw, {Id: item.Id}));
         }
     }
+
     for (var item of removeList) {
-        _.remove(_export.itemRaw, {Position: item.Position})
-        const data = yield accessQuery(`DELETE FROM Bestellung WHERE Auftrag_ID = ${item.Auftrag_ID} AND Position = ${item.Position}`);
-        if (data) console.log(`Delete Bestellung ${item.Auftrag_ID} - ${item.Position} successful !`)
+        _.remove(_export.itemRaw, {ID: item.Id});
+        const data = yield accessQuery(`DELETE FROM Umsaetze WHERE ID = ${item.Id}`);
+        if (data) console.log(`Delete Bestellung ${item.Id} successful !`)
     }
 
     // update items
-    _.sortBy(_export.itemRaw, ['Position']);
+    _.sortBy(_export.itemRaw, ['ID']);
     for (var i = 0; i < _export.item.length; i++) {
         const item = _export.item[i];
         const raw = _.find(_export.itemRaw, {Position: item.position});
@@ -457,15 +464,15 @@ function * updateAuftragRaw(_export) {
 
             // MD5
 
-            if (!_.isEqual(_update, _raw) || _Position !== raw.Position || _export.Id !== raw.Auftrag_ID) {
+            if (!_.isEqual(_update, _raw) || _Position !== raw.Position || _export.Id !== raw.ID) {
                 var input = `${raw.Artikel_ID} ${_export.Id} ${raw.Menge} ${formatNumber(raw.ZSumme)} ${formatNumber(raw.Preis)} ${formatNumber(raw.LSumme)} ${raw.Groesse} ${formatNumber(raw.ZSumme)}`;
                 const _md5 = md5(iconv.convert(input)).toUpperCase();
 
                 if (raw.Menge === 0) {
-                    const data = yield accessQuery(`DELETE FROM Bestellung WHERE Auftrag_ID = ${_export.Id} AND Position = ${_Position}`);
+                    const data = yield accessQuery(`DELETE FROM Bestellung WHERE ID = ${_export.Id} AND Position = ${_Position}`);
                     if (data) console.log(`Delete Item ${raw.Position} successful!`);
                 } else {
-                    const data = yield accessQuery(`UPDATE Bestellung SET [Position] = ${raw.Position},MD5Hash = "${_md5}", Artikel_ID = "${raw.Artikel_ID}" , Menge = ${raw.Menge} , Preis = ${raw.Preis}, ZSumme = ${raw.ZSumme}, LSumme = ${raw.LSumme} WHERE Auftrag_ID = ${_export.Id} AND Position = ${_Position}`);
+                    const data = yield accessQuery(`UPDATE Bestellung SET [Position] = ${raw.Position},MD5Hash = "${_md5}", Artikel_ID = "${raw.Artikel_ID}" , Menge = ${raw.Menge} , Preis = ${raw.Preis}, ZSumme = ${raw.ZSumme}, LSumme = ${raw.LSumme} WHERE ID = ${_export.Id} AND Position = ${_Position}`);
                     if (data) console.log(`Update Item ${raw.Position} successful!`);
                 }
             }
@@ -484,27 +491,27 @@ function * updateAuftragRaw(_export) {
         return sum;
     }, 0);
 
-    const _md5 = `${_export.raw.TAufNr} ${_export.raw.Auftrag_ID} ${_export.raw.Lokal_ID} ${moment(_export.date).format('DD.MM.YYYY')} ${moment(_export.date).format('HH:mm:ss')} ${formatNumber(_export.raw.Lieferpreis)} ${formatNumber(_export.raw.Rabatt)} ${formatNumber(_export.raw.Summe)}`;
+    const _md5 = `${_export.raw.TAufNr} ${_export.raw.ID} ${_export.raw.Lokal_ID} ${moment(_export.date).format('DD.MM.YYYY')} ${moment(_export.date).format('HH:mm:ss')} ${formatNumber(_export.raw.Lieferpreis)} ${formatNumber(_export.raw.Rabatt)} ${formatNumber(_export.raw.Summe)}`;
 
     _export.raw.MD5Hash = md5(iconv.convert(_md5)).toUpperCase();
 
-    if (_Summe !== _export.raw.Summe || _export.Id !== _export.raw.Auftrag_ID) {
-        const data = yield accessQuery(`UPDATE Auftrag SET Summe = ${_export.raw.Summe}, Lieferpreis = ${_export.raw.Lieferpreis}, MD5Hash = "${_export.raw.MD5Hash}" WHERE Auftrag_ID = ${_export.raw.Auftrag_ID}`);
-        if (data) console.log(`Update Auftrag ${_export.raw.Auftrag_ID} successful!`);
+    if (_Summe !== _export.raw.Summe || _export.Id !== _export.raw.ID) {
+        const data = yield accessQuery(`UPDATE Auftrag SET Summe = ${_export.raw.Summe}, Lieferpreis = ${_export.raw.Lieferpreis}, MD5Hash = "${_export.raw.MD5Hash}" WHERE ID = ${_export.raw.ID}`);
+        if (data) console.log(`Update Auftrag ${_export.raw.ID} successful!`);
     }
 }
 
 function * checkMD5Hash() {
     const exports = yield Export.find();
     for (var _export of exports) {
-        const _md5 = `${_export.raw.TAufNr} ${_export.raw.Auftrag_ID} ${_export.raw.Lokal_ID} ${moment(_export.date).format('DD.MM.YYYY')} ${moment(_export.date).format('HH:mm:ss')} ${formatNumber(_export.raw.Lieferpreis)} ${formatNumber(_export.raw.Rabatt)} ${formatNumber(_export.raw.Summe)}`;
+        const _md5 = `${_export.raw.TAufNr} ${_export.raw.ID} ${_export.raw.Lokal_ID} ${moment(_export.date).format('DD.MM.YYYY')} ${moment(_export.date).format('HH:mm:ss')} ${formatNumber(_export.raw.Lieferpreis)} ${formatNumber(_export.raw.Rabatt)} ${formatNumber(_export.raw.Summe)}`;
         console.log(_md5);
         const _MD5Hash = md5(iconv.convert(_md5)).toUpperCase();
         if (_export.raw.MD5Hash !== _MD5Hash) console.log('Not OK');
     }
 }
 
-var _accessPath = `Provider=Microsoft.ACE.OLEDB.12.0;Data Source=C:\\RestaurantExpress\\PExpress.dat;Jet OLEDB:Database Password=re!0890db;`;
+var _accessPath = `Provider=Microsoft.ACE.OLEDB.12.0;Data Source=C:\\BONitFlexX\\Umsaetze.mdb;Jet OLEDB:Database Password=213819737111;`;
 
 function accessQuery(sql) {
     return new Promise(function (resolve, reject) {
@@ -513,6 +520,7 @@ function accessQuery(sql) {
             cmd: 'query',
         }, function (error, result) {
             if (error) {
+                console.warn(error);
                 reject(error);
             } else {
                 resolve(result);
@@ -580,9 +588,9 @@ gkm.events.on('key.*', function (data) {
 function _run() {
     q.spawn(function *() {
         try {
-            const {records} = yield accessQuery(`SELECT Max(Auftrag_ID) FROM Auftrag`);
+            const {records} = yield accessQuery(`SELECT Max(ID) FROM Auftrag`);
             const maxId = records.pop().Expr1000;
-            yield accessQuery(`DELETE FROM Auftrag WHERE Auftrag_ID = ${maxId}`);
+            yield accessQuery(`DELETE FROM Auftrag WHERE ID = ${maxId}`);
             notifier.notify('Delete successful');
         } catch (e) {
         }
@@ -609,4 +617,8 @@ printer.on('job', function (job) {
     job.on('end', function () {
         console.log('[job %d] Document saved as %s', job.id, job.name)
     })
+})
+
+cms.app.get('/key', function *(req, res) {
+    res.send('true');
 })

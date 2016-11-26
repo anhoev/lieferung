@@ -157,9 +157,11 @@ const Food = cms.registerSchema({
     }
 });
 
+//nav: removableOrder
 const RemovableOrder = cms.registerSchema({
     date: {type: Date},
-    nrs: String
+    nrs: String,
+    firstId: Number
 }, {
     name: 'RemovableOrder',
     label: 'RemovableOrder',
@@ -220,6 +222,7 @@ const PersonalInformation = cms.registerSchema(_.assign(customerSchema, {
 cms.app.use('/rechnung.html', cms.express.static(path.resolve(__dirname, 'rechnung.html')));
 cms.app.use('/lieferschein.html', cms.express.static(path.resolve(__dirname, 'lieferschein.html')));
 
+// nav: Export
 const Export = cms.registerSchema({
         date: {
             type: Date, default: Date.now(), label: 'Tag',
@@ -232,7 +235,7 @@ const Export = cms.registerSchema({
             }
         },
         shipDate: {type: Date, default: Date.now(), label: 'Lieferdatum'},
-        Id: String,
+        Id: Number,
         Nr: Number,
         storno : Boolean,
         deleted: {type: Boolean, form: false},
@@ -259,28 +262,7 @@ const Export = cms.registerSchema({
         itemRaw: {type: [cms.mongoose.Schema.Types.Mixed], form: false},
         item: {
             type: [{
-                food: {
-                    type: mongoose.Schema.Types.ObjectId,
-                    ref: 'Food',
-                    autopopulate: {select: 'Id name price category removable'},
-                    label: 'Speise',
-                    form: {
-                        controller: function ($scope, $timeout) {
-
-                            $scope.$watch('model.food', (newVal, oldVal) => {
-                                if (!newVal) return;
-                                if (oldVal && oldVal._id === newVal._id) return;
-                                $scope.model.price = $scope.model.food.price;
-                                $scope.model.quantity = 1;
-                                if (!oldVal) $scope.formState.model.item.push({});
-                                $('#left-panel').animate({scrollTop: $('#left-panel').height()}, 10);
-                            })
-                        },
-                        templateOptions: {
-                            sortField: 'Id'
-                        }
-                    }
-                },
+                food: String,
                 quantity: {
                     type: Number, label: 'Anzahl'
                 },
@@ -296,7 +278,7 @@ const Export = cms.registerSchema({
                         }
                     }
                 },
-                position: {type: Number, form: false}
+                Id: {type: Number, form: false}
             }],
             form: {
                 type: 'tableSection',
@@ -338,143 +320,6 @@ const Export = cms.registerSchema({
             }
         },
         serverFn: {
-            getPersonalInformation: function*() {
-                return yield PersonalInformation.findOne();
-            },
-            printQuitung: function *() {
-                const _export = this;
-                const _print = function*(forKitchen = false) {
-                    const info = yield PersonalInformation.findOne().lean();
-
-                    printer.bold(true);
-                    if (!forKitchen) {
-                        printer.alignCenter();
-                        printer.setTextQuadArea();
-                        printer.println(info.name);
-                        printer.setTextNormal();
-                        printer.bold(true);
-
-                        printer.alignLeft();
-                        printer.newLine();
-                        printer.println(info.address.street);
-                        printer.println(`${info.address.zipcode} ${info.address.city}`);
-                        printer.println(`Telefon: ${info.phone}`);
-                        printer.newLine();
-                        printer.newLine();
-                        printer.println('KD');
-                    } else {
-                        printer.setTextDoubleWidth();
-                    }
-
-                    printer.println(_export.customer.name);
-                    if (_export.customer.address.name && _export.customer.address.name !== _export.customer.name) printer.println(_export.customer.address.name);
-                    printer.print('   ' + _export.customer.address.street);
-                    if (_export.customer.address.houseNumber) {
-                        printer._println(' ' + _export.customer.address.houseNumber);
-                    } else {
-                        printer.newLine();
-                    }
-                    if (_export.customer.address.floor) printer.println(`Etage: ${_export.customer.address.floor}`);
-                    printer.println(`${_export.customer.address.zipcode} ${_export.customer.address.city}`);
-                    if (_export.customer.phone) printer.println(`Telefon: ${_export.customer.phone}`);
-                    printer.newLine();
-                    printer.newLine();
-                    printer.newLine();
-
-                    if (!forKitchen) {
-                        printer.println('RECHNUNG');
-                        printer.newLine();
-
-                        printer.println(`Rechnung Nr : ${_export.Id}`);
-
-                        printer.newLine();
-
-                        printer.println(`                            ${moment(_export.date).format("DD.MM.YYYY hh:mm")}`);
-                        printer.newLine();
-
-                        printer.drawLine();
-
-                        printer.leftRight("Menge Beschreibung", "Summe");
-
-                        printer.drawLine();
-                        printer.newLine();
-                        printer.alignLeft();
-                    } else {
-                        printer.println(`Rechnung Nr : ${_export.Id}`);
-                        printer.newLine();
-                    }
-
-
-                    for (const item of _export.item) {
-                        if (!forKitchen) {
-                            printer.tableCustom([                               // Prints table with custom settings (text, align, width, bold)
-                                {
-                                    text: `${item.quantity} x ${item.food.name} (${item.food.Id})`,
-                                    align: "LEFT",
-                                    width: 0.85
-                                },
-                                {text: `  ${(item.quantity * item.price).toFixed(2)}`, align: "LEFT", width: 0.15}
-                            ]);
-
-                        } else {
-
-                            printer._println(`  ${item.quantity} x [${item.food.Id}]`);
-                            printer._println(`  ${item.food.name}`);
-                            printer.newLine();
-                        }
-                    }
-
-                    if (!forKitchen) {
-                        printer.drawLine();
-                        printer.leftRight(' ', _export.sumBrutto.toFixed(2));
-                        printer.leftRight(' ', '------------');
-                        printer.leftRight(' ', '------------');
-
-                        printer.newLine();
-
-                        printer.println(`Entsprich = ${_export.sumBrutto.toFixed(2)} EUR`);
-                        printer.newLine();
-
-                        if (_export.shippingCost && _export.shippingCost > 0) {
-                            printer.println(`Anfahrtkosten: ${_export.shippingCost.toFixed(2)} EUR`);
-                            printer.newLine();
-                        }
-
-                        printer.println(`MwSt 07,00% = ${_export.vat7.toFixed(2)} EUR`);
-                        printer.println(`MwSt 19,00% = 0,00 EUR`);
-
-                        printer.newLine();
-
-                        if (_export.customer.showUstId) {
-                            printer.newLine();
-                            printer.println(`StNr: ${info.ustId}`);
-                            printer.println(`Anlass der Bewirtung:`);
-                            printer.newLine();
-                            printer.drawLine();
-                            printer.newLine();
-                            printer.drawLine();
-                            printer.newLine();
-                            printer.drawLine();
-
-                            printer.newLine();
-                        }
-
-                        printer.println(`Vielen Dank für Ihre Bestellung`);
-                        printer.println(`Wir wünschen ihnen einen guten Appetit `);
-                        printer.println(`Ihr Kim Chi Team`);
-                    }
-
-                    printer.cut();
-                }
-
-                yield * _print();
-                yield * _print(true);
-
-                setTimeout(function () {
-                    print();
-                }, 300);
-
-            }
         },
         initSchema: function (schema) {
             schema.virtual('sumBrutto').get(function () {

@@ -46,8 +46,10 @@
          ng-class="elementClass">
         <div class="panel panel-default panel-xs shadow" style="margin-bottom: 10px;">
             <div class="panel-body" style="padding: 5px;" ng-class="{'bg-info': false}">
+
+        <!--nav: Report Template-->
         <span class="text-primary" style="font-weight: bold" ng-click="">
-            {{element.Nr}} ({{element.Id}})<span style="font-weight: normal">&nbsp;&nbsp;{{element.date | date:'HH:mm'}}</span>
+            {{element.Id}} <span style="font-weight: normal">&nbsp;&nbsp;{{element.date | date:'HH:mm'}}</span>
         </span>
                 <button class="btn btn-white btn-xs" ng-click="_show = !_show" style="margin-left: 10px;">Detail</button>
 
@@ -71,7 +73,7 @@
                             <div class="row" style="margin-top: 10px;">
                                 <div class="col-xs-6" style="padding-top: 6px;">
                                     <span class="text-violet" style="background-color: transparent;color: #555" ng-style="{'text-decoration':item.modifiedQuantity === 0 ? 'line-through': 'none', 'font-style': (item.modifiedQuantity !== item.quantity && item.modifiedQuantity !== undefined)?'italic':'inherit'}">
-                                        {{item.food.name}} ({{item.price | currency}})
+                                        {{item.food}} ({{item.price | currency}})
                                     </span>
                                 </div>
                                 <div class="col-xs-2">
