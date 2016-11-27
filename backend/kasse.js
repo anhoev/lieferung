@@ -206,7 +206,7 @@ const Report = cms.registerSchema({
                         const id = i + firstId;
                         _export.Id = id;
                         yield _export.save();
-                        yield accessQuery(`UPDATE Rechnungen SET Rechnungsnummer = ${id} WHERE ID = ${_export.raw.ID}`);
+                        yield accessQuery(`UPDATE Rechnungen SET Rechnungsnummer = ${id} WHERE Buchungsnummer = "${_export.raw.Buchungsnummer}"`);
                         yield accessQuery(`UPDATE Umsaetze SET Rechnungsnummer = ${id} WHERE Buchungsnummer = "${_export.raw.Buchungsnummer}"`);
                     }
                 }
