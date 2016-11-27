@@ -236,7 +236,6 @@ const Export = cms.registerSchema({
         },
         shipDate: {type: Date, default: Date.now(), label: 'Lieferdatum'},
         Id: Number,
-        Nr: Number,
         storno : Boolean,
         deleted: {type: Boolean, form: false},
         raw: {type: cms.mongoose.Schema.Types.Mixed, form: false},
