@@ -211,7 +211,7 @@ const Report = cms.registerSchema({
                     }
                 }
 
-                yield * exportAuftrags(date);
+                yield * exportAuftrags2(date);
             },
             // nav: queryExport
             queryExport: function *(date) {
@@ -394,7 +394,7 @@ function * importAuftrags(date) {
 }
 
 //nav: export auftrag 2
-function * exportAuftrags(date) {
+function * exportAuftrags2(date) {
     const exports = yield Export.find();
     for (var _export of exports) {
         // yield * updateAuftragRaw(_export);
@@ -419,7 +419,6 @@ function * exportAuftrags(date) {
         }
 
     } catch (e) {
-        debugger
     }
 
 }
