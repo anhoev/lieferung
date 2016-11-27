@@ -114,10 +114,14 @@ const customerSchema = {
         },
         houseNumber: {
             type: String, label: 'Hausnummer', form: {
-                controller: function ($scope, $http) {
+                controller: function ($scope, $http, $timeout) {
                     $scope.$watch('model.houseNumber', function (newVal) {
                         if (!$scope.model.streetObj) return;
-                        $scope.model.street = `${$scope.model.streetObj.name} ${newVal}`;
+
+                        $timeout(function () {
+                            $scope.model.street = `${$scope.model.streetObj.name} ${newVal}`;
+                        })
+
                         if (!$scope.model.zipcode) {
                             $http.get(`https://maps.googleapis.com/maps/api/geocode/json?address=${$scope.model.street},${$scope.model.city}&key=AIzaSyCMkI_vyp8ZJTW1-udo7dUR0-R180zWwms`).then(function ({data}) {
                                 const zipcode = _.find(data.results[0].address_components, function (c) {
@@ -492,7 +496,8 @@ const Export = cms.registerSchema({
                         })
                     },
                     templateOptions: {
-                        sortField: 'Id'
+                        sortField: 'Id',
+                        showWithQuery: true
                     }
                 }
             },
@@ -544,7 +549,7 @@ const Export = cms.registerSchema({
                     window._focus = function () {
                         $(element).find('.selectize-input:last').find('input').focus();
                     }
-                    window._focus();
+                    // window._focus();
                 }, 100)
             }
         },
@@ -600,6 +605,7 @@ const Export = cms.registerSchema({
                 printer.println(_export.customer.name);
                 if (_export.customer.address.name && _export.customer.address.name !== _export.customer.name) printer.println(_export.customer.address.name);
                 printer.print('   ' + _export.customer.address.street);
+                if  (_export.customer.address.street.indexOf(_export.customer.address.houseNumber + '') === -1) printer.print(' ' + _export.customer.address.houseNumber);
 
                 if (_export.customer.address.floor) printer.println(`Etage: ${_export.customer.address.floor}`);
                 printer.println(`${_export.customer.address.zipcode} ${_export.customer.address.city}`);
@@ -1034,253 +1040,255 @@ cms.app.get('/api/phone', function*(req, res) {
 cms.app.use('/shortcut.js', cms.express.static(path.resolve(__dirname, 'shortcut.js')));
 
 const OrderView = cms.registerSchema({
-    name: String
-},
+        name: String
+    },
     {
-    name: 'OrderView',
-    formatterUrl: 'backend/order-view.html',
-    title: 'name',
-    isViewElement: true,
-    autopopulate: true,
-    alwaysLoad: true,
-    controller: function ($scope, cms, formService, $timeout, $http, $uibModal) {
-        $('#left-panel').css('height', $('#left-panel').height() + 'px');
-        $scope.data = {
-            waitCustomers: [],
-            free: true
-        };
-
-        $scope.clear = function () {
-            $scope.data.phone = '';
-            $scope.data.export = {
-                paymentOption: 'Barverkauf',
-                item: []
+        name: 'OrderView',
+        formatterUrl: 'backend/order-view.html',
+        title: 'name',
+        isViewElement: true,
+        autopopulate: true,
+        alwaysLoad: true,
+        controller: function ($scope, cms, formService, $timeout, $http, $uibModal) {
+            $('#left-panel').css('height', $('#left-panel').height() + 'px');
+            $scope.data = {
+                waitCustomers: [],
+                free: true
             };
 
-            $timeout(function () {
-                $scope.data.export.item.push({});
-            }, 100)
+            $scope.clear = function () {
+                $scope.data.phone = '';
+                $scope.data.export = {
+                    paymentOption: 'Barverkauf',
+                    item: []
+                };
 
-            $scope.data.customer = {address: {city: 'Hamburg'}};
-
-            $timeout(function () {
-                $scope.data.free = true;
-            }, 200);
-        }
-
-        $scope.$watch('data.export.customer', function (customer) {
-            if (customer) $scope.data.customer = customer;
-        })
-
-        $scope.clear();
-
-        window._clear = function () {
-            $scope.clear();
-        }
-
-        $scope.newCustomer = function (cb) {
-            cms.createElement('Customer', $scope.data.customer, function (model) {
                 $timeout(function () {
-                    $scope.data.export.customer = $scope.data.customer = _.find(cms.types.Customer.list, {_id: model._id});
-                    if (cb) cb();
-                    if (!cb) window._focus();
+                    $scope.data.export.item.push({});
                 }, 100)
-            }, false);
-        }
 
-        const cArr = ['data.customer.fromInternet', 'data.customer.showUstId', 'data.customer.address', 'data.customer.name', 'data.customer.phone', 'data.customer.note'];
-        for (const p of cArr) {
-            $scope.$watch(p, function (newVal, oldVal) {
-                if (newVal) $scope.data.free = false;
-                if (oldVal && oldVal.city && !oldVal.street) return;
-                if (oldVal != undefined && !angular.equals(newVal, oldVal) && $scope.data.customer && $scope.data.customer._id) {
-                    $scope.saveCustomer(false);
+                $scope.data.customer = {address: {city: 'Hamburg'}};
+
+                $timeout(function () {
+                    $scope.data.free = true;
+                    window._focusTelefon();
+                }, 200);
+
+            }
+
+            $scope.$watch('data.export.customer', function (customer) {
+                if (customer) $scope.data.customer = customer;
+            })
+
+            $scope.clear();
+
+            window._clear = function () {
+                $scope.clear();
+            }
+
+            $scope.newCustomer = function (cb) {
+                cms.createElement('Customer', $scope.data.customer, function (model) {
+                    $timeout(function () {
+                        $scope.data.export.customer = $scope.data.customer = _.find(cms.types.Customer.list, {_id: model._id});
+                        if (cb) cb();
+                        if (!cb) window._focus();
+                    }, 100)
+                }, false);
+            }
+
+            const cArr = ['data.customer.fromInternet', 'data.customer.showUstId', 'data.customer.address', 'data.customer.name', 'data.customer.phone', 'data.customer.note'];
+            for (const p of cArr) {
+                $scope.$watch(p, function (newVal, oldVal) {
+                    if (newVal) $scope.data.free = false;
+                    if (oldVal && oldVal.city && !oldVal.street) return;
+                    if (oldVal != undefined && !angular.equals(newVal, oldVal) && $scope.data.customer && $scope.data.customer._id) {
+                        $scope.saveCustomer(false);
+                    }
+                }, true);
+            }
+
+            $scope.$watch('data.customer.address.zipcode', function (newVal, oldVal) {
+                if (newVal) {
+                    try {
+                        $timeout(function () {
+                            $scope.data.export.shippingCost = $scope.shippingCostCalculate(newVal);
+                        })
+                    } catch (e) {
+                    }
+                }
+            })
+
+            $scope.$watch('data.export.item', function (newVal, oldVal) {
+                if (newVal && newVal.length > 0) {
+                    const items = $scope.data.export.item;
+                    $scope.data.sum = _.reduce(items, (sum, item) => {
+                        if (item.quantity && item.price)
+                            sum += item.quantity * item.price;
+                        return sum;
+                    }, 0)
                 }
             }, true);
-        }
 
-        $scope.$watch('data.customer.address.zipcode', function (newVal, oldVal) {
-            if (newVal) {
-                try {
-                    $timeout(function () {
-                        $scope.data.export.shippingCost = $scope.shippingCostCalculate(newVal);
-                    })
-                } catch (e) {
-                }
-            }
-        })
-
-        $scope.$watch('data.export.item', function (newVal, oldVal) {
-            if (newVal && newVal.length > 0) {
-                const items = $scope.data.export.item;
-                $scope.data.sum = _.reduce(items, (sum, item) => {
-                    if (item.quantity && item.price)
-                        sum += item.quantity * item.price;
-                    return sum;
-                }, 0)
-            }
-        }, true);
-
-        $scope.saveCustomer = function (notify = true) {
-            if (!$scope.data.customer._id) {
-                $scope.newCustomer();
-                return;
-            }
-            delete $scope.data.customer.$order;
-            cms.updateElement('Customer', $scope.data.customer, function (model) {
-                // if (notify) confirm('Speichern erfolgreich!');
-                // $scope.clear();
-                $timeout(function () {
-                    if (notify) $scope.data.export.customer = $scope.data.customer = _.find(cms.types.Customer.list, {_id: model._id});
-                }, 100)
-            });
-        }
-
-        $scope.newCustomerFromInternet = function () {
-            $scope.data.customer.fromInternet = true;
-            $scope.newCustomer();
-        }
-
-        window._fromInternet = function () {
-            $scope.data.customer.fromInternet = !$scope.data.customer.fromInternet;
-        }
-
-        $scope.order = function () {
-            if (!$scope.data.customer.phone || !$scope.data.export.item[0].food) return;
-
-            const __order = function () {
-                if ($scope.data.customer.fromInternet) {
-                    $scope.data.export.fromInternet = true;
-                    $scope.data.export.paymentOption = 'Unbar';
-                }
-
-                if ($scope.data.customer.showUstId) $scope.data.export.showUstId = true;
-                $scope.data.export.item = _.filter($scope.data.export.item, item => item.food);
-
-                if (!$scope.data.export.customer) $scope.data.export.customer = $scope.data.customer;
-
-                function _order() {
-                    cms.createElement('Export', $scope.data.export, function (_export) {
-                        cms.execServerFn('Export', _export, 'printQuitung');
-                        $scope.clear();
-                    }, false)
-                }
-
+            $scope.saveCustomer = function (notify = true) {
                 if (!$scope.data.customer._id) {
-                    $scope.newCustomer(function () {
+                    $scope.newCustomer();
+                    return;
+                }
+                delete $scope.data.customer.$order;
+                cms.updateElement('Customer', $scope.data.customer, function (model) {
+                    // if (notify) confirm('Speichern erfolgreich!');
+                    // $scope.clear();
+                    $timeout(function () {
+                        if (notify) $scope.data.export.customer = $scope.data.customer = _.find(cms.types.Customer.list, {_id: model._id});
+                    }, 100)
+                });
+            }
+
+            $scope.newCustomerFromInternet = function () {
+                $scope.data.customer.fromInternet = true;
+                $scope.newCustomer();
+            }
+
+            window._fromInternet = function () {
+                $scope.data.customer.fromInternet = !$scope.data.customer.fromInternet;
+            }
+
+            $scope.order = function () {
+                if (!$scope.data.customer.phone || !$scope.data.export.item[0].food) return;
+
+                const __order = function () {
+                    if ($scope.data.customer.fromInternet) {
+                        $scope.data.export.fromInternet = true;
+                        $scope.data.export.paymentOption = 'Unbar';
+                    }
+
+                    if ($scope.data.customer.showUstId) $scope.data.export.showUstId = true;
+                    $scope.data.export.item = _.filter($scope.data.export.item, item => item.food);
+
+                    if (!$scope.data.export.customer) $scope.data.export.customer = $scope.data.customer;
+
+                    function _order() {
+                        cms.createElement('Export', $scope.data.export, function (_export) {
+                            cms.execServerFn('Export', _export, 'printQuitung');
+                            $scope.clear();
+                        }, false)
+                    }
+
+                    if (!$scope.data.customer._id) {
+                        $scope.newCustomer(function () {
+                            _order();
+                        })
+                    } else {
                         _order();
-                    })
-                } else {
-                    _order();
+                    }
                 }
-            }
 
-            if ($scope.data.export.Id) {
-                return __order();
-            }
-
-            $http.get('api/exportId').then(function ({data}) {
-                $scope.data.export.Id = data.maxId;
-                $scope.data.export.date = new Date();
-
-                __order();
-            });
-        }
-
-        window._order = function () {
-            $scope.order();
-        }
-
-        window._showUstId = function () {
-            $scope.data.customer.showUstId = !$scope.data.customer.showUstId;
-        }
-
-
-        $scope.orderFromInternet = function () {
-            $scope.data.export.fromInternet = true;
-            $scope.order();
-        }
-
-        $scope.shippingCostCalculate = function (zipcode) {
-            const free = [
-                22171, 22179, 22175, 22159, 22145, 22147, 22177, 22391, 22393, 22047, 22309, 22049
-            ];
-
-            const cost1 = [
-                22399, 22149, 22337
-            ]
-
-            const cost15 = [
-                22359, 22395
-            ]
-
-            const cost2 = [
-                22037, 22397
-            ]
-
-            if (_.includes(cost1, parseInt(zipcode))) return 1;
-            if (_.includes(cost15, parseInt(zipcode))) return 1.5;
-            if (_.includes(cost2, parseInt(zipcode))) return 2;
-
-            return 0;
-        }
-
-        $scope.setCustomer = function (customer) {
-            if (!$scope.data.free) return;
-            if (customer._id) {
-                $scope.data.export.customer = customer;
-                $scope.data.customer = $scope.data.export.customer;
-                window._focus();
-            } else {
-                $scope.data.customer.phone = customer.phone;
-                window._focusName();
-            }
-        }
-
-        $scope._setCustomer = function (customer, $index) {
-            $scope.setCustomer(customer);
-            if ($scope.data.free) {
-                $scope.data.waitCustomers.splice($index, 1);
-            }
-        }
-
-        window._nextCustomer = function () {
-            $scope._setCustomer($scope.data.waitCustomers[0], 0);
-        }
-
-        cms.socket.on('message', event => {
-            const _data = JsonFn.parse(event, true);
-            if (_data.path !== 'phone') return;
-            var customer = _data.customer;
-
-            if (customer) {
-                if ($scope.data.free) {
-                    $scope.setCustomer(customer);
-                } else {
-                    $scope.data.waitCustomers.push(customer);
+                if ($scope.data.export.Id) {
+                    return __order();
                 }
-            } else {
-                if ($scope.data.free) {
-                    $scope.setCustomer({
-                        phone: _data.phone
-                    });
+
+                $http.get('api/exportId').then(function ({data}) {
+                    $scope.data.export.Id = data.maxId;
+                    $scope.data.export.date = new Date();
+
+                    __order();
+                });
+            }
+
+            window._order = function () {
+                $scope.order();
+            }
+
+            window._showUstId = function () {
+                $scope.data.customer.showUstId = !$scope.data.customer.showUstId;
+            }
+
+
+            $scope.orderFromInternet = function () {
+                $scope.data.export.fromInternet = true;
+                $scope.order();
+            }
+
+            $scope.shippingCostCalculate = function (zipcode) {
+                const free = [
+                    22171, 22179, 22175, 22159, 22145, 22147, 22177, 22391, 22393, 22047, 22309, 22049
+                ];
+
+                const cost1 = [
+                    22399, 22149, 22337
+                ]
+
+                const cost15 = [
+                    22359, 22395
+                ]
+
+                const cost2 = [
+                    22037, 22397
+                ]
+
+                if (_.includes(cost1, parseInt(zipcode))) return 1;
+                if (_.includes(cost15, parseInt(zipcode))) return 1.5;
+                if (_.includes(cost2, parseInt(zipcode))) return 2;
+
+                return 0;
+            }
+
+            $scope.setCustomer = function (customer) {
+                if (!$scope.data.free) return;
+                if (customer._id) {
+                    $scope.data.export.customer = customer;
+                    $scope.data.customer = $scope.data.export.customer;
+                    window._focus();
+                } else {
+                    $scope.data.customer.phone = customer.phone;
                     window._focusName();
-                } else {
-                    $scope.data.waitCustomers.push({
-                        phone: _data.phone
-                    });
                 }
             }
-            $scope.data.phone = _data.phone;
 
-            $scope.$digest();
+            $scope._setCustomer = function (customer, $index) {
+                $scope.setCustomer(customer);
+                if ($scope.data.free) {
+                    $scope.data.waitCustomers.splice($index, 1);
+                }
+            }
 
-        })
+            window._nextCustomer = function () {
+                $scope._setCustomer($scope.data.waitCustomers[0], 0);
+            }
 
-        window._openAdmin = function () {
-            $timeout(function () {
-                const modal = $uibModal.open({
-                    template: `
+            cms.socket.on('message', event => {
+                const _data = JsonFn.parse(event, true);
+                if (_data.path !== 'phone') return;
+                var customer = _data.customer;
+
+                if (customer) {
+                    if ($scope.data.free) {
+                        $scope.setCustomer(customer);
+                    } else {
+                        $scope.data.waitCustomers.push(customer);
+                    }
+                } else {
+                    if ($scope.data.free) {
+                        $scope.setCustomer({
+                            phone: _data.phone
+                        });
+                        window._focusName();
+                    } else {
+                        $scope.data.waitCustomers.push({
+                            phone: _data.phone
+                        });
+                    }
+                }
+                $scope.data.phone = _data.phone;
+
+                $scope.$digest();
+
+            })
+
+            window._openAdmin = function () {
+                $timeout(function () {
+                    const modal = $uibModal.open({
+                        template: `
                             <div style="padding: 20px;">
                                 <form class="form">
                                     <input placeholder="password" type="password" ng-model="password" class="form-control">
@@ -1290,30 +1298,30 @@ const OrderView = cms.registerSchema({
                                 </form>
                             </div>
                         `,
-                    controller: function ($scope, $uibModalInstance) {
-                        $scope.close = function (password) {
-                            if (password === 'KimChi1111') {
-                                $uibModalInstance.close();
+                        controller: function ($scope, $uibModalInstance) {
+                            $scope.close = function (password) {
+                                if (password === 'KimChi1111') {
+                                    $uibModalInstance.close();
+                                }
+                            }
+                            $scope.cancel = function () {
+                                $uibModalInstance.dismiss();
                             }
                         }
-                        $scope.cancel = function () {
-                            $uibModalInstance.dismiss();
-                        }
-                    }
-                });
+                    });
 
-                modal.result.then(function () {
-                    window._openAdminPage();
+                    modal.result.then(function () {
+                        window._openAdminPage();
+                    })
+
+                    // window._openAdminPage();
                 })
+            }
 
-                // window._openAdminPage();
-            })
-        }
-
-        window._changeExport = function () {
-            $timeout(function () {
-                const modal = $uibModal.open({
-                    template: `
+            window._changeExport = function () {
+                $timeout(function () {
+                    const modal = $uibModal.open({
+                        template: `
                             <div style="padding: 20px;">
                                 <form class="form">
                                     <input placeholder="Rechnung Nr" type="number" ng-model="nr" class="form-control">
@@ -1323,92 +1331,92 @@ const OrderView = cms.registerSchema({
                                 </form>
                             </div>
                         `,
-                    controller: function ($scope, $uibModalInstance) {
-                        $scope.close = function (nr) {
-                            $uibModalInstance.close(nr);
+                        controller: function ($scope, $uibModalInstance) {
+                            $scope.close = function (nr) {
+                                $uibModalInstance.close(nr);
+                            }
+                            $scope.cancel = function () {
+                                $uibModalInstance.dismiss();
+                            }
                         }
-                        $scope.cancel = function () {
-                            $uibModalInstance.dismiss();
-                        }
-                    }
+                    });
+
+                    modal.result.then(function (nr) {
+                        cms.execServerFn('OrderView', $scope.model, 'getRechnung', new Date(), nr).then(function ({data: [_export]}) {
+                            $scope.data.export = _export;
+                            $scope.data.customer = $scope.data.export.customer;
+                            $scope.data.export.item.push({});
+                            $timeout(function () {
+                                window._focus();
+                            })
+                        });
+                    })
+                })
+            }
+
+        },
+        link: function (scope, element) {
+            setTimeout(function () {
+                $('nav').css('display', 'none');
+
+                shortcut.add("F1", function () {
+                    window._focusTelefon();
                 });
 
-                modal.result.then(function (nr) {
-                    cms.execServerFn('OrderView', $scope.model, 'getRechnung', new Date(), nr).then(function ({data: [_export]}) {
-                        $scope.data.export = _export;
-                        $scope.data.customer = $scope.data.export.customer;
-                        $scope.data.export.item.push({});
-                        $timeout(function () {
-                            window._focus();
-                        })
-                    });
-                })
+                shortcut.add("F2", function () {
+                    window._focus();
+                });
+
+                shortcut.add("F3", function () {
+                    window._customerSearch();
+                });
+
+                shortcut.add("F8", function () {
+                    window._clear();
+                });
+
+                shortcut.add("F6", function () {
+                    window._changeExport();
+                });
+
+                shortcut.add("F7", function () {
+                    window._openAdmin();
+                });
+
+                shortcut.add("F12", function () {
+                    window._order();
+                });
+
+
+                shortcut.add("End", function () {
+                    scope.$apply(function () {
+                        window._fromInternet();
+                    })
+                });
+                shortcut.add("Page_down", function () {
+                    scope.$apply(function () {
+                        window._showUstId();
+                    })
+                });
+                shortcut.add("Page_up", function () {
+                    scope.$apply(function () {
+                        window._nextCustomer();
+                    })
+                });
             })
+        },
+        serverFn: {
+            getRechnung: function *(date, nr) {
+                return yield Export.find({
+                    date: {
+                        $gte: moment(date).startOf('day').toDate(),
+                        $lte: moment(date).endOf('day').toDate()
+                    },
+                    Id: nr
+                });
+            }
         }
-
-    },
-    link: function (scope, element) {
-        setTimeout(function () {
-            $('nav').css('display', 'none');
-
-            shortcut.add("F1", function () {
-                window._focusTelefon();
-            });
-
-            shortcut.add("F2", function () {
-                window._focus();
-            });
-
-            shortcut.add("F3", function () {
-                window._customerSearch();
-            });
-
-            shortcut.add("F8", function () {
-                window._clear();
-            });
-
-            shortcut.add("F6", function () {
-                window._changeExport();
-            });
-
-            shortcut.add("F7", function () {
-                window._openAdmin();
-            });
-
-            shortcut.add("F12", function () {
-                window._order();
-            });
-
-
-            shortcut.add("End", function () {
-                scope.$apply(function () {
-                    window._fromInternet();
-                })
-            });
-            shortcut.add("Page_down", function () {
-                scope.$apply(function () {
-                    window._showUstId();
-                })
-            });
-            shortcut.add("Page_up", function () {
-                scope.$apply(function () {
-                    window._nextCustomer();
-                })
-            });
-        })
-    },
-    serverFn: {
-        getRechnung: function *(date, nr) {
-            return yield Export.find({
-                date: {
-                    $gte: moment(date).startOf('day').toDate(),
-                    $lte: moment(date).endOf('day').toDate()
-                },
-                Id: nr
-            });
-        }
-    }
-});
+    });
 
 
 const Street = cms.registerSchema({
