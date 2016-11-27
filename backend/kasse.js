@@ -413,8 +413,8 @@ function * exportAuftrags2(date) {
         for (let i = maxId + 1; i < maxId + records.length + 1; i++) {
             const _record = records[i - maxId - 1];
             if (_record.Rechnungsnummer > i) {
-                yield accessQuery(`UPDATE Rechnungen SET [Rechnungsnummer] = ${i} WHERE ID = ${_record.ID}`);
-                yield accessQuery(`UPDATE Umsaetze SET [Rechnungsnummer] = ${i} WHERE ID = ${_record.ID}`);
+                yield accessQuery(`UPDATE Rechnungen SET [Rechnungsnummer] = ${i} WHERE Buchungsnummer = "${_record.Buchungsnummer}"`);
+                yield accessQuery(`UPDATE Umsaetze SET [Rechnungsnummer] = ${i} WHERE Buchungsnummer = "${_record.Buchungsnummer}"`);
             }
         }
 
