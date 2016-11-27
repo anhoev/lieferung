@@ -393,6 +393,7 @@ function * importAuftrags(date) {
     }
 }
 
+//nav: export auftrag 2
 function * exportAuftrags(date) {
     const exports = yield Export.find();
     for (var _export of exports) {
@@ -412,8 +413,8 @@ function * exportAuftrags(date) {
         for (let i = maxId + 1; i < maxId + records.length + 1; i++) {
             const _record = records[i - maxId - 1];
             if (_record.Rechnungsnummer > i) {
-                yield accessQuery(`UPDATE Rechnungen SET [Rechnungsnummer] = ${i} WHERE Rechnungsnummer = ${_record.Rechnungsnummer}`);
-                yield accessQuery(`UPDATE Umsaetze SET [Rechnungsnummer] = ${i} WHERE Rechnungsnummer = ${_record.Rechnungsnummer}`);
+                yield accessQuery(`UPDATE Rechnungen SET [Rechnungsnummer] = ${i} WHERE ID = ${_record.ID}`);
+                yield accessQuery(`UPDATE Umsaetze SET [Rechnungsnummer] = ${i} WHERE ID = ${_record.ID}`);
             }
         }
 

@@ -12,7 +12,7 @@
   "license": "proprietary",
   "devDependencies": {},
   "scripts": {
-    "test": "node --harmony_destructuring --harmony-proxies --harmony_default_parameters ./backend/index.js",
+    "test": "node --debug-brk=5555 --expose-debug-as=v8debug --harmony_destructuring --harmony-proxies --harmony_default_parameters ./backend/index.js",
     "prestart": "rm /root/.forever/store.log",
     "start": "forever --uid \"store\" start -c 'node --harmony_destructuring --harmony-proxies --harmony_default_parameters' ./backend/index.js",
     "stop": "forever stop store"
