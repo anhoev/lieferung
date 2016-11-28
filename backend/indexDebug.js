@@ -29,17 +29,18 @@ cms.app.get('/debug', function *(req, res) {
         var out = require('child_process').execSync('git pull', 'utf-8');
         _out += out.toString() + '\n';
         console.log(out.toString());
-        nodeServer = require('child_process').exec('npm test');
         console.log('debug beginning');
+        nodeServer = require('child_process').exec('npm test');
     } catch (e) {
         console.warn(e);
     }
-    return _out;
+    res.send('ok');
 })
 
 cms.app.get('/kill', function *(req, res) {
     console.log('debug stop');
     if (nodeServer) nodeServer.kill();
+    res.send('ok');
 })
 
 // cms.data.online.wsAddress = 'ws://localhost:8888';
