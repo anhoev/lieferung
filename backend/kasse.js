@@ -207,16 +207,16 @@ const Report = cms.registerSchema({
 
                     yield accessQuery(`insert into Rechnungen (${columns}) values (${values})`);
 
-                    for (var j = 0; j < __export.item.length; j++) {
-                        var item = __export.item[j];
+                    for (var j = 0; j < _export.item.length; j++) {
+                        var item = _export.item[j];
 
                         const _item = merge(_.pickBy(item.raw, (v, k) => k !== 'ID', true), {Rechnungsnummer: i + firstId});
-                        const columns = Object.keys(__export).join(',');
+                        const columns = Object.keys(_item).join(',');
 
-                        const values = Object.keys(__export).map(k => {
-                            if (typeof __export[k] === 'string') return `"${__export[k]}"`;
-                            if (__export[k] instanceof Date) return `#${moment(__export[k]).format('YYYY-MM-DD HH:mm:ss')}#`;
-                            return __export[k];
+                        const values = Object.keys(_item).map(k => {
+                            if (typeof _item[k] === 'string') return `"${_item[k]}"`;
+                            if (_item[k] instanceof Date) return `#${moment(_item[k]).format('YYYY-MM-DD HH:mm:ss')}#`;
+                            return _item[k];
                         }).join(',');
 
                         yield accessQuery(`insert into Umsaetze (${columns}) values (${values})`);
