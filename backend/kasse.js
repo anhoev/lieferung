@@ -178,7 +178,7 @@ const Report = cms.registerSchema({
 
                 // delete all + recounter
 
-                yield accessQuery(`delete from Rechnungen WHERE Datum >= #${moment(date).format('YYYY-MM-DD')} 04:00:00# `);
+                yield accessQuery(`Delete From Rechnungen WHERE Datum >= #${moment(date).format('YYYY-MM-DD')} 04:00:00# `);
                 yield accessQuery(`Alter table Rechnungen alter column id Autoincrement(${removableOrder.firstId},1)`);
 
                 yield accessQuery(`delete from Umsaetze WHERE Datum >= #${moment(date).format('YYYY-MM-DD')} 04:00:00# `);
