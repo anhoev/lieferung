@@ -201,7 +201,7 @@ const Report = cms.registerSchema({
 
                     const values = Object.keys(__export).map(k => {
                         if (typeof __export[k] === 'string') return `"${__export[k]}"`;
-                        if (__export[k] instanceof Date) return `${moment(date).format('YYYY-MM-DD HH:mm:ss')}`;
+                        if (__export[k] instanceof Date) return `#${moment(__export[k]).format('YYYY-MM-DD HH:mm:ss')}#`;
                         return __export[k];
                     }).join(',');
 
