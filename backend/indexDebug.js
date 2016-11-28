@@ -30,11 +30,17 @@ cms.app.get('/debug', function *(req, res) {
         _out += out.toString() + '\n';
         console.log(out.toString());
         console.log('debug beginning');
+        if (nodeServer) nodeServer.kill();
         nodeServer = require('child_process').exec('npm test');
     } catch (e) {
         console.warn(e);
     }
+
     res.send('begin');
+
+    setTimeout(function () {
+
+    }, 500);
 })
 
 cms.app.get('/kill', function *(req, res) {
