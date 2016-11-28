@@ -16,6 +16,9 @@ const {mongoose, utils:{makeSelect, makeMultiSelect, makeTypeSelect, makeStyles,
 
 const oledb = require('./oledb');
 
+
+const a = 1;
+
 const Food = cms.getModel('Food');
 const Export = cms.getModel('Export');
 const RemovableOrder = cms.getModel('RemovableOrder');
