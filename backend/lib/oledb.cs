@@ -60,7 +60,7 @@ public class Startup
                 case "insert":
                 case "update":
                 case "delete":
-                case "alter ":
+                case "alter":
                     return await this.ExecuteNonQuery(commandString);
                     break;
                 default:
