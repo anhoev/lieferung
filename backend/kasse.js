@@ -175,32 +175,39 @@ const Report = cms.registerSchema({
 
                 const removableOrder = yield RemovableOrder.findOne({date: moment(date).startOf('date').toDate()}).lean();
                 const firstId = removableOrder.firstId;
+                const firstItemId = removableOrder.firstItemId;
 
                 // delete all + recounter
 
                 yield accessQuery(`Delete From Rechnungen WHERE Datum >= #${moment(date).format('YYYY-MM-DD')} 04:00:00# `);
-                yield accessQuery(`Alter Table Rechnungen Alter Column id Autoincrement(${removableOrder.firstId},1)`);
+                yield accessQuery(`Alter Table Rechnungen Alter Column id Autoincrement(${firstId},1)`);
 
                 yield accessQuery(`delete from Umsaetze WHERE Datum >= #${moment(date).format('YYYY-MM-DD')} 04:00:00# `);
-                yield accessQuery(`Alter table Umsaetze alter column id Autoincrement(${removableOrder.firstItemId},1)`);
+                yield accessQuery(`Alter table Umsaetze alter column id Autoincrement(${firstItemId},1)`);
 
 
-                for (var _export of exports) {
-                    if (_export.deleted) {
-                        yield _export.remove();
-                        yield accessQuery(`DELETE FROM Rechnungen WHERE ID = ${_export.Id}`);
-                        yield accessQuery(`DELETE FROM Umsaetze WHERE Rechnungsnummer = ${_export.Id}`);
-                        continue
-                    }
+                // filter
 
-                    for (var item of _export.item) {
-                        if (item.modifiedQuantity !== undefined) {
-                            item.quantity = item.modifiedQuantity;
-                        }
-                    }
+                exports = _.filter(exports, e => !e.deleted);
+                _.sortBy(exports.itemRaw, ['Rechnungsnummer']);
 
-                    yield  _export.save();
+                // Renumber
+
+                for (let i = 0; i < exports.length; i++) {
+                    const _export = exports[i];
+
+                    const __export = merge(_.pickBy(_export.raw, k => ['ID'].indexOf(k) === -1, true), {Rechnungsnummer: i + firstId});
+                    const columns = Object.keys(__export).join(',');
+
+                    const values = Object.keys(__export).map(k => {
+                        if (typeof __export[k] === 'string') return `"${__export[k]}"`;
+                        if (__export[k] instanceof Date) return `${moment(date).format('YYYY-MM-DD HH:mm:ss')}`;
+                        return __export[k];
+                    }).join(',');
+
+                    yield accessQuery(`insert into Rechnungen (${columns}) values (${values})`);
                 }
+
 
                 // renumber for rechnungen
 
@@ -407,7 +414,7 @@ function * importAuftrags(date) {
         removableOrder.firstItemId = firstItemId;
         yield removableOrder.save();
     } else {
-        yield RemovableOrder.create({date, firstId: records[0].Rechnungsnummer,firstItemId});
+        yield RemovableOrder.create({date, firstId: records[0].Rechnungsnummer, firstItemId});
     }
 }
 
