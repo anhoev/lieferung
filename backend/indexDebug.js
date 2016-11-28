@@ -22,8 +22,12 @@ cms.server('backend/en', '');
 
 let nodeServer;
 var psTree = require('ps-tree');
-var treeKill = require('tree-kill');
 
+const runServer = function () {
+    nodeServer = require('child_process').exec('node --debug-brk=5555 --expose-debug-as=v8debug --harmony_destructuring --harmony-proxies --harmony_default_parameters ./backend/index.js');
+};
+
+var treeKill = require('tree-kill');
 cms.app.get('/debug', function *(req, res) {
     process.chdir(require('path').resolve(__dirname, '../'));
     let _out = '';
@@ -37,9 +41,12 @@ cms.app.get('/debug', function *(req, res) {
 
         console.log('debug beginning');
         if (nodeServer) {
-            treeKill(nodeServer.pid);
+            treeKill(nodeServer.pid, function () {
+                runServer();
+            });
+        } else {
+            runServer();
         }
-        nodeServer = require('child_process').exec('node --debug-brk=5555 --expose-debug-as=v8debug --harmony_destructuring --harmony-proxies --harmony_default_parameters ./backend/index.js');
     } catch (e) {
         console.warn(e);
     }

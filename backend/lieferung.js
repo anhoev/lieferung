@@ -236,7 +236,7 @@ const Export = cms.registerSchema({
         },
         shipDate: {type: Date, default: Date.now(), label: 'Lieferdatum'},
         Id: Number,
-        storno : Boolean,
+        storno: Boolean,
         deleted: {type: Boolean, form: false},
         raw: {type: cms.mongoose.Schema.Types.Mixed, form: false},
         paymentOption: {type: String, form: makeSelect('EC', 'Barverkauf', 'Überweisung'), label: 'Zahlungsmethod'},
@@ -277,7 +277,8 @@ const Export = cms.registerSchema({
                         }
                     }
                 },
-                Id: {type: Number, form: false}
+                Id: {type: Number, form: false},
+                raw: {type: cms.mongoose.Schema.Types.Mixed, form: false},
             }],
             form: {
                 type: 'tableSection',
@@ -318,8 +319,7 @@ const Export = cms.registerSchema({
                 right: '-14px'
             }
         },
-        serverFn: {
-        },
+        serverFn: {},
         initSchema: function (schema) {
             schema.virtual('sumBrutto').get(function () {
                 return _.reduce(this.item, (sum, item) => {
@@ -350,7 +350,7 @@ const Export = cms.registerSchema({
                             $scope.data = {};
                             $scope.instance = $uibModalInstance;
 
-                            $scope.cancel = ()=>$uibModalInstance.dismiss('cancel');
+                            $scope.cancel = () => $uibModalInstance.dismiss('cancel');
                             $scope.print = () => {
                                 $('#rechnung').printThis({debug: true});
                             };
@@ -379,7 +379,7 @@ const Export = cms.registerSchema({
                             $scope.data = {};
                             $scope.instance = $uibModalInstance;
 
-                            $scope.cancel = ()=>$uibModalInstance.dismiss('cancel');
+                            $scope.cancel = () => $uibModalInstance.dismiss('cancel');
                             $scope.print = () => {
                                 $('#rechnung').printThis({debug: true});
                             };

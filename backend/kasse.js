@@ -382,7 +382,8 @@ function * importAuftrags(date) {
                 food: bestellung.Bezeichnung,
                 quantity: bestellung.Menge,
                 price: bestellung.Verkaufspreis,
-                Id: bestellung.ID
+                Id: bestellung.ID,
+                raw: bestellung
             })
         }
 
