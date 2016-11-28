@@ -191,7 +191,9 @@ const Report = cms.registerSchema({
                 exports = _.filter(exports, e => !e.deleted);
                 _.sortBy(exports.itemRaw, ['Rechnungsnummer']);
 
+
                 // Renumber
+                let last;
 
                 for (let i = 0; i < exports.length; i++) {
                     const _export = exports[i];
@@ -221,31 +223,12 @@ const Report = cms.registerSchema({
 
                         yield accessQuery(`insert into Umsaetze (${columns}) values (${values})`);
                     }
+
+                    last = i + firstId;
                 }
 
+                yield accessQuery(`update Rechnungsnummer set Rechnungsnummer = ${last} where id = 1`);
 
-                // renumber for rechnungen
-
-                exports = yield Export.find({
-                    date: {
-                        $gte: moment(date).hour(4).toDate(),
-                        $lte: moment(date).add(1, 'day').hour(4).toDate()
-                    }
-                });
-
-                exports.sort((e1, e2) => e1.Id - e2.Id);
-                for (let i = 0; i < exports.length; i++) {
-                    const _export = exports[i];
-                    if (_export.Id !== i + firstId) {
-                        const id = i + firstId;
-                        _export.Id = id;
-                        yield _export.save();
-                        yield accessQuery(`UPDATE Rechnungen SET Rechnungsnummer = ${id} WHERE Buchungsnummer = "${_export.raw.Buchungsnummer}"`);
-                        yield accessQuery(`UPDATE Umsaetze SET Rechnungsnummer = ${id} WHERE Buchungsnummer = "${_export.raw.Buchungsnummer}"`);
-                    }
-                }
-
-                yield * exportAuftrags2(date);
             },
             // nav: queryExport
             queryExport: function *(date) {
@@ -431,36 +414,6 @@ function * importAuftrags(date) {
     } else {
         yield RemovableOrder.create({date, firstId: records[0].Rechnungsnummer, firstItemId});
     }
-}
-
-//nav: export auftrag 2
-function * exportAuftrags2(date) {
-    const exports = yield Export.find();
-    for (var _export of exports) {
-        // yield * updateAuftragRaw(_export);
-    }
-
-    // change all Ids for the next days
-
-    try {
-        exports.sort((e1, e2) => e1.Id - e2.Id);
-        const _export = exports.pop();
-        const maxId = parseInt(_export.Id);
-
-        const {records} = yield accessQuery(`SELECT * FROM Rechnungen WHERE Datum > #${moment(date).add(1, 'day').format('YYYY-MM-DD')} 04:00:00#`);
-        records.sort((r1, r2) => r1.Rechnungsnummer - r2.Rechnungsnummer);
-
-        for (let i = maxId + 1; i < maxId + records.length + 1; i++) {
-            const _record = records[i - maxId - 1];
-            if (_record.Rechnungsnummer > i) {
-                yield accessQuery(`UPDATE Rechnungen SET [Rechnungsnummer] = ${i} WHERE Buchungsnummer = "${_record.Buchungsnummer}"`);
-                yield accessQuery(`UPDATE Umsaetze SET [Rechnungsnummer] = ${i} WHERE Buchungsnummer = "${_record.Buchungsnummer}"`);
-            }
-        }
-
-    } catch (e) {
-    }
-
 }
 
 function formatNumber(n) {
