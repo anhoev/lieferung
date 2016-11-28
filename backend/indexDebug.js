@@ -41,7 +41,7 @@ cms.app.get('/debug', function *(req, res) {
 
         console.log('debug beginning');
         if (nodeServer) {
-            treeKill(nodeServer.pid, function () {
+            treeKill(nodeServer.pid, 'SIGKILL', function () {
                 runServer();
                 res.send('begin');
             });
