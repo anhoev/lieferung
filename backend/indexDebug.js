@@ -29,13 +29,12 @@ cms.app.get('/debug', function *(req, res) {
         var out = require('child_process').execSync('git pull', 'utf-8');
         _out += out.toString() + '\n';
         console.log(out.toString());
-        return _out;
-        nodeServer = require('child_process').execSync('npm test', 'utf-8');
-        _out += nodeServer.toString();
+        nodeServer = require('child_process').exec('npm test');
         console.log(out.toString());
     } catch (e) {
         console.warn(e);
     }
+    return _out;
 })
 
 cms.app.get('/kill', function *(req, res) {
