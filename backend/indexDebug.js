@@ -27,13 +27,13 @@ cms.app.get('/debug', function *(req, res) {
         var out = require('child_process').execSync('git pull', 'utf-8');
         _out += out.toString() + '\n';
         console.log(out.toString());
+        return _out;
         out = require('child_process').execSync('npm test', 'utf-8');
         _out += out.toString();
         console.log(out.toString());
     } catch (e) {
         console.warn(e);
     }
-    return _out;
 
 })
 
