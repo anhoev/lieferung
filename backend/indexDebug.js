@@ -43,19 +43,15 @@ cms.app.get('/debug', function *(req, res) {
         if (nodeServer) {
             treeKill(nodeServer.pid, function () {
                 runServer();
+                res.send('begin');
             });
         } else {
             runServer();
+            res.send('begin');
         }
     } catch (e) {
         console.warn(e);
     }
-
-    res.send('begin');
-
-    setTimeout(function () {
-
-    }, 500);
 })
 
 cms.app.get('/kill', function *(req, res) {
