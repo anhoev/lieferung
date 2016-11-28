@@ -196,7 +196,7 @@ const Report = cms.registerSchema({
                 for (let i = 0; i < exports.length; i++) {
                     const _export = exports[i];
 
-                    const __export = merge(_.pickBy(_export.raw, k => ['ID'].indexOf(k) === -1, true), {Rechnungsnummer: i + firstId});
+                    const __export = merge(_.pickBy(_export.raw, (v, k) => k !== 'ID', true), {Rechnungsnummer: i + firstId});
                     const columns = Object.keys(__export).join(',');
 
                     const values = Object.keys(__export).map(k => {
