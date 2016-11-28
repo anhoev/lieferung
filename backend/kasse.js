@@ -206,6 +206,21 @@ const Report = cms.registerSchema({
                     }).join(',');
 
                     yield accessQuery(`insert into Rechnungen (${columns}) values (${values})`);
+
+                    for (var j = 0; j < __export.item.length; j++) {
+                        var item = __export.item[j];
+
+                        const _item = merge(_.pickBy(item.raw, (v, k) => k !== 'ID', true), {Rechnungsnummer: i + firstId});
+                        const columns = Object.keys(__export).join(',');
+
+                        const values = Object.keys(__export).map(k => {
+                            if (typeof __export[k] === 'string') return `"${__export[k]}"`;
+                            if (__export[k] instanceof Date) return `#${moment(__export[k]).format('YYYY-MM-DD HH:mm:ss')}#`;
+                            return __export[k];
+                        }).join(',');
+
+                        yield accessQuery(`insert into Umsaetze (${columns}) values (${values})`);
+                    }
                 }
 
 
