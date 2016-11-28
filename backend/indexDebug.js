@@ -22,12 +22,13 @@ cms.server('backend/en', '');
 
 cms.app.get('/debug', function *(req, res) {
     process.chdir(require('path').resolve(__dirname, '../'));
-    var cmd = 'git pull';
     let _out = '';
     var out = require('child_process').execSync('git pull', 'utf-8');
-    _out += out.toString();
+    _out += out.toString() + '\n';
+    console.log(out.toString());
     out = require('child_process').execSync('npm test', 'utf-8');
     _out += out.toString();
+    console.log(out.toString());
     return _out;
 
 })
