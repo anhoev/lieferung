@@ -167,10 +167,21 @@ const Report = cms.registerSchema({
             exportAuftrag: function *(date) {
                 let exports = yield Export.find({
                     date: {
-                        $gte: moment(date).hour(4).toDate(),
-                        $lte: moment(date).add(1, 'day').hour(4).toDate()
+                        $gte: moment(date).hour(4).toDate()
                     }
                 });
+
+                // get first id
+
+                const removableOrder = yield RemovableOrder.findOne({date: moment(date).startOf('date').toDate()}).lean();
+                const firstId = removableOrder.firstId;
+
+                // delete all + recounter
+
+                yield accessQuery(`delete from Rechnungen WHERE Datum >= #${moment(date).format('YYYY-MM-DD')} 04:00:00# `);
+                yield accessQuery(`Alter table Rechnungen alter column id Autoincrement(${firstId},1)`);
+
+
                 for (var _export of exports) {
                     if (_export.deleted) {
                         yield _export.remove();
@@ -189,8 +200,6 @@ const Report = cms.registerSchema({
                 }
 
                 // renumber for rechnungen
-                const removableOrder = yield RemovableOrder.findOne({date: moment(date).startOf('date').toDate()}).lean();
-                const firstId = removableOrder.firstId;
 
                 exports = yield Export.find({
                     date: {
@@ -357,16 +366,13 @@ function * importAuftrags(date) {
 
     const removableOrder = yield RemovableOrder.findOne({date: moment(date).startOf('date').toDate()});
 
-    if (removableOrder) {
-        removableOrder.firstId = records[0].Rechnungsnummer;
-        yield removableOrder.save();
-    } else {
-        yield RemovableOrder.create({date, firstId: records[0].Rechnungsnummer});
-    }
+    let firstItemId;
 
     for (const auftrag of records) {
         const {records} = yield accessQuery(`SELECT * FROM Umsaetze WHERE Rechnungsnummer = ${auftrag.Rechnungsnummer}`);
         records.sort((r1, r2) => r1.Rechnungsnummer - r2.Rechnungsnummer);
+
+        if (!firstItemId) firstItemId = records[0].ID;
 
         const Datum = moment(auftrag.Datum);
         const _export = new Export({
@@ -391,6 +397,14 @@ function * importAuftrags(date) {
             upsert: true,
             setDefaultsOnInsert: true
         }).exec();
+    }
+
+    if (removableOrder) {
+        removableOrder.firstId = records[0].Rechnungsnummer;
+        removableOrder.firstItemId = firstItemId;
+        yield removableOrder.save();
+    } else {
+        yield RemovableOrder.create({date, firstId: records[0].Rechnungsnummer,firstItemId});
     }
 }
 
