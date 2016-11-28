@@ -34,13 +34,15 @@ cms.app.get('/debug', function *(req, res) {
     } catch (e) {
         console.warn(e);
     }
-    res.send('ok');
+    res.send('begin');
 })
 
 cms.app.get('/kill', function *(req, res) {
     console.log('debug stop');
     if (nodeServer) nodeServer.kill();
-    res.send('ok');
+    setTimeout(function () {
+        res.send('stop');
+    }, 1000)
 })
 
 // cms.data.online.wsAddress = 'ws://localhost:8888';
