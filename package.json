@@ -36,9 +36,11 @@
     "node-thermal-printer": "^1.0.3",
     "numeral": "^1.5.3",
     "printer": "^0.2.2",
+    "ps-tree": "^1.1.0",
     "q": "^1.4.1",
     "serialport": "^4.0.3",
     "serialport2": "0.0.5",
-    "thermalprinter": "^0.3.8"
+    "thermalprinter": "^0.3.8",
+    "tree-kill": "^1.1.0"
   }
 }

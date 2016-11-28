@@ -21,6 +21,8 @@ cms.menu = {
 cms.server('backend/en', '');
 
 let nodeServer;
+var psTree = require('ps-tree');
+var treeKill = require('tree-kill');
 
 cms.app.get('/debug', function *(req, res) {
     process.chdir(require('path').resolve(__dirname, '../'));
@@ -28,10 +30,16 @@ cms.app.get('/debug', function *(req, res) {
     try {
         var out = require('child_process').execSync('git pull', 'utf-8');
         _out += out.toString() + '\n';
+
         console.log(out.toString());
+
+        require('child_process').execSync('cp', 'utf-8');
+
         console.log('debug beginning');
-        if (nodeServer) nodeServer.kill();
-        nodeServer = require('child_process').exec('npm test');
+        if (nodeServer) {
+            treeKill(nodeServer.pid);
+        }
+        nodeServer = require('child_process').exec('node --debug-brk=5555 --expose-debug-as=v8debug --harmony_destructuring --harmony-proxies --harmony_default_parameters ./backend/index.js');
     } catch (e) {
         console.warn(e);
     }
