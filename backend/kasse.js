@@ -179,7 +179,10 @@ const Report = cms.registerSchema({
                 // delete all + recounter
 
                 yield accessQuery(`delete from Rechnungen WHERE Datum >= #${moment(date).format('YYYY-MM-DD')} 04:00:00# `);
-                yield accessQuery(`Alter table Rechnungen alter column id Autoincrement(${firstId},1)`);
+                yield accessQuery(`Alter table Rechnungen alter column id Autoincrement(${removableOrder.firstId},1)`);
+
+                yield accessQuery(`delete from Umsaetze WHERE Datum >= #${moment(date).format('YYYY-MM-DD')} 04:00:00# `);
+                yield accessQuery(`Alter table Umsaetze alter column id Autoincrement(${removableOrder.firstItemId},1)`);
 
 
                 for (var _export of exports) {
@@ -364,8 +367,6 @@ function * importAuftrags(date) {
 
     records.sort((r1, r2) => r1.Rechnungsnummer - r2.Rechnungsnummer);
 
-    const removableOrder = yield RemovableOrder.findOne({date: moment(date).startOf('date').toDate()});
-
     let firstItemId;
 
     for (const auftrag of records) {
@@ -398,6 +399,8 @@ function * importAuftrags(date) {
             setDefaultsOnInsert: true
         }).exec();
     }
+
+    const removableOrder = yield RemovableOrder.findOne({date: moment(date).startOf('date').toDate()});
 
     if (removableOrder) {
         removableOrder.firstId = records[0].Rechnungsnummer;
