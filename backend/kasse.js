@@ -68,11 +68,12 @@ function sql(_path) {
     }
 
     return {
-        accessQuery,accessOpen,accessClose
+        accessQuery, accessOpen, accessClose
     }
 }
 
-const {accessQuery,accessOpen,accessClose} = sql(`Provider=Microsoft.ACE.OLEDB.12.0;Data Source=C:\\BONitFlexX\\Umsaetze.mdb;Jet OLEDB:Database Password=213819737111;`);
+const {accessQuery, accessOpen, accessClose} = sql(`Provider=Microsoft.ACE.OLEDB.12.0;Data Source=C:\\BONitFlexX\\Umsaetze.mdb;Jet OLEDB:Database Password=213819737111;`);
+const {accessQuery:accessQueryProtokoll, accessOpen:accessOpenProtokoll, accessClose:accessCloseProtokoll} = sql(`Provider=Microsoft.ACE.OLEDB.12.0;Data Source=C:\\BONitFlexX\\Protokoll.mdb;Jet OLEDB:Database Password=213819737111;`);
 
 const Report = cms.registerSchema({
         name: {type: String}
@@ -88,6 +89,10 @@ const Report = cms.registerSchema({
         //nav: Report Controller
         controller: function (cms, $scope, $timeout, Notification) {
             cms.execServerFn('Report', $scope.model, 'openConnection').then();
+
+            $scope.$on('$destroy', function() {
+                cms.execServerFn('Report', $scope.model, 'closeConnection').then();
+            });
 
             $scope.updateSoftware = function () {
                 cms.execServerFn('Report', $scope.model, 'updateSoftware').then(function (result) {
@@ -182,8 +187,16 @@ const Report = cms.registerSchema({
             $scope.type = 'Export';
         },
         serverFn: {
+            //nav: openConnection
             openConnection: function *() {
                 yield accessOpen();
+                yield accessOpenProtokoll();
+            },
+            //nav: closeConnection
+            closeConnection: function *() {
+                console.log('Close connection');
+                yield accessClose();
+                yield accessCloseProtokoll();
             },
             updateSoftware: function *() {
                 process.chdir(require('path').resolve(__dirname, '../'));
