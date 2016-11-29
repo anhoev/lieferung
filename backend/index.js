@@ -2,7 +2,7 @@
 const _ = require('lodash');
 const cms = require('cmsmon');
 cms.data.security = false;
-cms.listen(8888);
+cms.listen(1234);
 cms.resolvePath = (p) => `backend/${p}`;
 cms.mongoose.connect('mongodb://localhost/kasse');
 cms.data.webtype = cms.Enum.WebType.APPLICATION;
