@@ -432,7 +432,7 @@ const Report = cms.registerSchema({
                 });
 
                 const sum = _.reduce(exports, (sum, _export) => {
-                    if (!_export.storno) sum += _export.sumBrutto;
+                    if (!_export.storno) sum += _export.Normalsprice;
                     return sum;
                 }, 0);
 
