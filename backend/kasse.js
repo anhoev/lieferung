@@ -276,6 +276,8 @@ const Report = cms.registerSchema({
                 _.sortBy(exports.itemRaw, ['Rechnungsnummer']);
 
 
+                const mapBuchung = {};
+
                 // Renumber
                 let last;
 
@@ -283,6 +285,11 @@ const Report = cms.registerSchema({
                     const _export = exports[i];
 
                     const __export = merge(_.pickBy(_export.raw, (v, k) => k !== 'ID', true), {Rechnungsnummer: i + firstId});
+
+                    // remember for protokoll
+
+                    mapBuchung[__export.Buchungsnummer] = __export.Rechnungsnummer;
+
                     const columns = Object.keys(__export).join(',');
 
                     const values = Object.keys(__export).map(k => {
@@ -327,7 +334,7 @@ const Report = cms.registerSchema({
 
                 for (const protocol of protocols) {
 
-                    const raw = _.pickBy(protocol.raw, (v, k) => k !== 'ID', true);
+                    const raw = merge(_.pickBy(protocol.raw, (v, k) => k !== 'ID', true), {Rechnungsnummer: mapBuchung[protocol.raw.Buchungsnummer]});
 
                     const columns = Object.keys(raw).join(',');
 
