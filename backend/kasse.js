@@ -147,7 +147,7 @@ const Report = cms.registerSchema({
                         controller: function ($scope, $uibModalInstance, formService) {
                             $scope.date = new Date();
                             $scope.modal = $uibModalInstance;
-                            $scope.begin = JsonFn.parse(data, true);
+                            $scope.begin = moment(data).toDate();
                         }
                     });
 
