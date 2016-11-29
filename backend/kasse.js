@@ -248,6 +248,15 @@ const Report = cms.registerSchema({
         link: function (scope, element) {
             setTimeout(function () {
                 $('nav').css('display', 'none');
+                $(document).ready(function(){
+                    $("#input").keydown(function(e){
+                        if(e.which==17 || e.which==74){
+                            e.preventDefault();
+                        }else{
+                            console.log(e.which);
+                        }
+                    })
+                });
             })
         },
         serverFn: {
