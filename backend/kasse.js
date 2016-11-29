@@ -333,8 +333,9 @@ const Report = cms.registerSchema({
                 protocols = _.filter(protocols, p => !p.deleted);
 
                 for (const protocol of protocols) {
+                    let raw = _.pickBy(protocol.raw, (v, k) => k !== 'ID', true);
 
-                    const raw = merge(_.pickBy(protocol.raw, (v, k) => k !== 'ID', true), {Rechnungsnummer: mapBuchung[protocol.raw.Buchungsnummer]});
+                    if (raw.Rechnungsnummer && raw.Rechnungsnummer !== 0 && mapBuchung[protocol.raw.Buchungsnummer])  raw = merge(raw, {Rechnungsnummer: mapBuchung[protocol.raw.Buchungsnummer]});
 
                     const columns = Object.keys(raw).join(',');
 
