@@ -90,13 +90,13 @@
                                     </span>
                                 </div>
                                 <div class="col-xs-2">
-                                    <input class="form-control" type="number" ng-model="item.quantity">
+                                    <input class="form-control" type="number" disabled="true" ng-model="item.quantity">
                                 </div>
                                 <div class="col-xs-2">
-                                    <input class="form-control" type="text" ng-model="item.modifiedQuantity">
+                                    <input class="form-control" type="text" disabled="true" ng-model="item.modifiedQuantity">
                                 </div>
                                 <div class="col-xs-2">
-                                    <button class="btn btn-white btn-sm" ng-click="element.item.splice($index, 1)">
+                                    <button class="btn btn-white btn-sm" disabled="true" ng-click="element.item.splice($index, 1)">
                                         Löschen
                                     </button>
                                 </div>
@@ -107,7 +107,7 @@
 
                     <br>
 
-                    <button class="cms-btn btn-outline btn btn-success btn-xs" ng-click="save(element)">Speichern
+                    <button class="cms-btn btn-outline btn btn-success btn-xs" disabled="true" ng-click="save(element)">Speichern
                     </button>
                 </div>
 
