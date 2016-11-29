@@ -627,7 +627,10 @@ function * importAuftrags(date) {
 
 
 q.spawn(function *() {
-    yield accessOpen();
+    yield Report.findOneAndUpdate({_id: '581f660232dccc2194209e8c'}, {name: 'KassenBericht'}, {
+        upsert: true,
+        setDefaultsOnInsert: true
+    }).exec();
 })
 
 // delete last bestellung
