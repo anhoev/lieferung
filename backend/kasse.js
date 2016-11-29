@@ -22,8 +22,9 @@ const Protokoll = cms.getModel('Protokoll');
 const RemovableOrder = cms.getModel('RemovableOrder');
 
 
+const oledbClass = require('./oledb');
+
 function sql(_path) {
-    const oledbClass = require('./oledb');
     const oledb = new oledbClass();
 
     function accessQuery(sql) {
