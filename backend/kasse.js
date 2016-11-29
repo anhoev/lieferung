@@ -240,6 +240,11 @@ const Report = cms.registerSchema({
 
             $scope.type = 'Export';
         },
+        link: function (scope, element) {
+            setTimeout(function () {
+                $('nav').css('display', 'none');
+            })
+        },
         serverFn: {
             //nav: openConnection
             openConnection: function *() {
