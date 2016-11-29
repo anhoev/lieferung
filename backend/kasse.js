@@ -134,7 +134,9 @@ const Report = cms.registerSchema({
 
             $scope.refresh = function (onlySumme) {
                 cms.execServerFn('Report', $scope.model, 'queryExport', $scope.data.date).then(function ({data}) {
-                    $scope.data.list = [];
+                    if (!onlySumme) {
+                        $scope.data.list = [];
+                    }
                     $timeout(function () {
                         if (!onlySumme) {
                             $scope.data.list.push(...data.exports);
