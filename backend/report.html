@@ -69,13 +69,13 @@
 
                     <button class="cms-btn btn-outline btn btn-default btn-xs" ng-click="_show = !_show" style="margin-left: 10px;">Detail</button>
                     <button class="cms-btn btn-outline btn btn-danger btn-xs" ng-show="element.raw.Zahlart !== 'Bewirtung'" ng-click="data.list.splice($index,1); delete(element)" style="margin-left: 10px;">Löschen</button>
+                    <div class="cms-btn btn-outline btn btn-danger btn-xs" ng-show="element.raw.Zahlart === 'Bewirtung'" style="margin-left: 10px;">Bewirtung</div>
 
                     <span class="label label-primary pull-right" style="margin-right: 10px;display: none"
                           ng-click="printQuitung()">Rechnung ausdrücken</span>
                     <span class="label label-primary pull-right" style="margin-right: 5px;display: none;">{{element.date | date:'dd-MM HH:mm'}}</span>
                     <span class="label label-success pull-right" style="margin-right: 5px;">{{ element.status }}</span>
-
-                    <span class="label label-danger pull-right" style="margin-right: 5px;" ng-show="element.raw.Zahlart === 'Bewirtung'">Bewirtung</span>
+                    
                     <span class="label label-danger pull-right" style="margin-right: 5px;"
                           ng-show="element.storno">Storno</span>
 
