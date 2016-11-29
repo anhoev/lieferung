@@ -327,9 +327,9 @@ const Report = cms.registerSchema({
                     const columns = Object.keys(protocol.raw).join(',');
 
                     const values = Object.keys(protocol.raw).map(k => {
-                        if (typeof protocol[k] === 'string') return `"${protocol[k]}"`;
-                        if (protocol[k] instanceof Date) return `#${moment(protocol[k]).format('YYYY-MM-DD HH:mm:ss')}#`;
-                        return protocol[k];
+                        if (typeof protocol.raw[k] === 'string') return `"${protocol.raw[k]}"`;
+                        if (protocol.raw[k] instanceof Date) return `#${moment(protocol.raw[k]).format('YYYY-MM-DD HH:mm:ss')}#`;
+                        return protocol.raw[k];
                     }).join(',');
 
                     yield accessQueryProtokoll(`insert into Protokoll (${columns}) values (${values})`);
