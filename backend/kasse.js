@@ -138,18 +138,16 @@ const Report = cms.registerSchema({
                     const instance = $uibModal.open({
                         template: `
                         <div style="padding: 20px;">
-                            <input type="date" ng-model="date" class="form-control">
+                            <input type="date" ng-model="date" ng-min="" class="form-control">
                             <br><br>
                             <button class="btn btn-default" ng-click="modal.close(date)">Auswählen</button>
                             <button class="btn btn-default">Schließen</button>
                         </div>
                     `,
-                        controller: function ($scope, $uibModalInstance, formService, begin) {
+                        controller: function ($scope, $uibModalInstance, formService) {
                             $scope.date = new Date();
                             $scope.modal = $uibModalInstance;
-                        },
-                        resolve: {
-                            begin: data.beginDay
+                            $scope.begin = JsonFn.parse(data, true);
                         }
                     });
 
@@ -236,7 +234,7 @@ const Report = cms.registerSchema({
             },
             beginDay: function *() {
                 const {records} = yield accessQuery('select * from Tagesabschluesse');
-                if (!records || records.length === 0) return {beginDate: null};
+                if (!records || records.length === 0) return null;
                 _.sortBy(records, ['EndDatum']);
                 return _.last(records).EndDatum;
             },
