@@ -132,12 +132,14 @@ const Report = cms.registerSchema({
                 }
             }, true);
 
-            $scope.refresh = function () {
+            $scope.refresh = function (onlySumme) {
                 cms.execServerFn('Report', $scope.model, 'queryExport', $scope.data.date).then(function ({data}) {
                     $scope.data.list = [];
                     $timeout(function () {
-                        $scope.data.list.push(...data.exports);
-                        $scope.data.sum = data.sum;
+                        if (!onlySumme) {
+                            $scope.data.list.push(...data.exports);
+                            $scope.data.sum = data.sum;
+                        }
                         $scope.data.modifiedSum = data.modifiedSum;
                     })
                 })

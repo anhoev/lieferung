@@ -50,7 +50,6 @@ public class Startup
         }
         else
         {
-            Console.WriteLine("connectionString: "+ this.connectionString);
             string commandString = ((string)parameters["query"]);
             string command = commandString.Substring(0, 6).Trim().ToLower();
             switch (command)
