@@ -158,9 +158,10 @@ const Report = cms.registerSchema({
                     });
 
                     instance.result.then(function (date) {
-                        debugger
 
-                        $scope.data.date = moment(date).toDate();
+                        $scope.data.date = moment(date,'dddd - DD.MM.YYYY').toDate();
+                        
+                        debugger
 
                         cms.execServerFn('Report', $scope.model, 'importAuftrag', $scope.data.date).then(function ({data}) {
                             if (data) $scope.data.nrs = data.nrs;
