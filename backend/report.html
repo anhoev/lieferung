@@ -58,11 +58,11 @@
             <div class="panel-body" style="padding: 5px;" ng-class="{'bg-info': false}">
 
                 <!--nav: Report Template-->
-                <span class="text-primary" style="font-weight: bold" ng-click="">
+
+                <div class="text-primary pull-left" style="font-weight: bold;width: 200px;" ng-click="">
                     {{element.Id}} <span style="font-weight: normal">&nbsp;&nbsp;{{element.date | date:'HH:mm'}}</span>
                     &nbsp;&nbsp;<span class="text-success" style="width: 70px;">{{element.sumBrutto | currency}}</span>
-
-                </span>
+                </div>
 
 
                 <button class="cms-btn btn-outline btn btn-default btn-xs" ng-click="_show = !_show" style="margin-left: 10px;">Detail</button>
