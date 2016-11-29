@@ -14,7 +14,7 @@ require('./lieferung');
 require('./kasse');
 require('./key');
 
-cms.data.online.autoOpenAdmin = true;
+// cms.data.online.autoOpenAdmin = true;
 
 cms.menu = {
     top: '51px',
