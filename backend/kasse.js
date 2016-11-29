@@ -114,6 +114,10 @@ const Report = cms.registerSchema({
                 list: []
             }
 
+            $scope.barcode = function ($event, barcode) {
+                debugger
+            }
+
             $scope.$watch('data.date', function (n, o) {
                 if (n) {
                     $scope.refresh();
