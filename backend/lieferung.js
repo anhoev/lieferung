@@ -14,22 +14,6 @@ function merge() {
 
 const {mongoose, utils:{makeSelect, makeMultiSelect, makeTypeSelect, makeStyles, makeCustomSelect}} = cms;
 
-const Print = require('printer');
-
-var printer = require("node-thermal-printer");
-printer.init({
-    type: 'epson',
-    interface: 'usb://EPSON/TM-T20II'
-});
-
-printer._println = printer.println;
-printer.println = function (str) {
-    if (str) {
-        printer.print('   ');
-        printer._println(str);
-    }
-}
-
 const customerSchema = {
     name: {type: String, label: 'Name'},
     //Id: {type: Number},
