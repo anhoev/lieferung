@@ -329,14 +329,14 @@ const Report = cms.registerSchema({
                     const columns = Object.keys(raw).join(',');
 
                     const values = Object.keys(raw).map(k => {
-                        if (raw[k] === undefined || raw[k] === '') return 'NULL';
+                        if (raw[k] === null) return 'NULL';
                         if (typeof raw[k] === 'string') return `"${raw[k]}"`;
                         if (raw[k] instanceof Date) return `#${moment(raw[k]).format('YYYY-MM-DD HH:mm:ss')}#`;
                         return raw[k];
                     }).join(',');
 
-                    if (values === '29,"1611261855440009","BAR Rechnung","Administrator",11,3,9,0,0,,,#2016-11-28 19:17:22#') debugger;
-                    
+                    // if (values === '29,"1611261855440009","BAR Rechnung","Administrator",11,3,9,0,0,,,#2016-11-28 19:17:22#') debugger;
+
                     yield accessQueryProtokoll(`insert into Protokoll (${columns}) values (${values})`);
                 }
 
