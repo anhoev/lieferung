@@ -59,12 +59,10 @@
 
                 <!--nav: Report Template-->
 
-                <div class="text-primary pull-left" style="font-weight: bold;width: 20px;" ng-click="">
-                    {{element.Id}}
+                <div class="text-primary pull-left" style="font-weight: bold;width: 200px;" ng-click="">
+                    {{element.Id}} <span style="font-weight: normal">&nbsp;&nbsp;{{element.date | date:'HH:mm'}}</span>
+                    &nbsp;&nbsp;<span class="text-success" style="width: 70px;">{{element.sumBrutto | currency}}</span>
                 </div>
-
-                <div class="pull-left text-primary" style="">&nbsp;&nbsp;{{element.date | date:'HH:mm'}}</div>
-                <span class="text-success" style="width: 70px;">{{element.sumBrutto | currency}}</span>
 
 
                 <button class="cms-btn btn-outline btn btn-default btn-xs" ng-click="_show = !_show" style="margin-left: 10px;">Detail</button>
