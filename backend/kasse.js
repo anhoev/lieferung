@@ -137,16 +137,15 @@ const Report = cms.registerSchema({
                     const instance = $uibModal.open({
                         template: `
                         <div style="padding: 20px;">
-                            <input type="date" ng-model="date" min="{{begin | date:'yyyy-MM-dd'}}" class="form-control">
-                            <br><br>
-                            <button class="btn btn-default" ng-click="modal.close(date)">Auswählen</button>
-                            <button class="btn btn-default">Schließen</button>
+                            <div ng-repeat="date in dates">
+                                <button class="btn btn-white">{{ date.summe }}</button>
+                            </div>
+                           
                         </div>
                     `,
                         controller: function ($scope, $uibModalInstance, formService) {
-                            $scope.date = new Date();
+                            $scope.dates = JsonFn.clone(data, true);
                             $scope.modal = $uibModalInstance;
-                            $scope.begin = moment(data).toDate();
                         }
                     });
 
@@ -237,14 +236,13 @@ const Report = cms.registerSchema({
                 _.sortBy(records, ['Rechnungsnummer']);
 
                 let dates = _.groupBy(records, function (rechnung) {
-                    return moment(rechnung.Datum).subtract(4, 'hour').startOf('day').format('DD.MM.YYYY');
+                    return moment(rechnung.Datum).subtract(4, 'hour').startOf('day').format('dddd - DD.MM.YYYY');
                 });
 
                 dates = _.map(dates, (rechnungen, date) => ({
                     date,
                     summe: _.reduce(rechnungen, (summe, rechnung) => summe + rechnung.Normalpreis, 0)
                 }))
-                debugger
 
                 return dates;
             },
