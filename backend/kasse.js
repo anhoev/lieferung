@@ -119,8 +119,8 @@ const Report = cms.registerSchema({
                     const _export = _.find($scope.data.list, _export => _export.raw.Buchungsnummer === v);
                     if (_export) {
                         $timeout(function () {
-                            $scope.data.Buchungsnummer = '';
                             $scope.data.nrs += ' ' + _export.Id;
+                            $scope.data.Buchungsnummer = '';
                         })
                     }
                 }
