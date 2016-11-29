@@ -138,7 +138,10 @@ const Report = cms.registerSchema({
                         template: `
                         <div style="padding: 20px;">
                             <div ng-repeat="date in dates">
-                                <button class="btn btn-white">{{ date.summe }}</button>
+                                <button class="btn btn-white">{{ date.summe }} Euro   {{ date.date }}</button>
+                                
+                                <br>
+                                <br>
                             </div>
                            
                         </div>
