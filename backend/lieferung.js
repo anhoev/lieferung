@@ -415,3 +415,18 @@ const Export = cms.registerSchema({
             }
         }
     });
+
+
+const Protokoll = cms.registerSchema({
+    raw: {type: cms.mongoose.Schema.Types.Mixed, form: false},
+}, {
+    name: 'Protokoll',
+    label: 'Protokoll',
+    formatter: `
+            <h4></h4>
+        `,
+    title: '_id',
+    isViewElement: false,
+    autopopulate: true,
+    alwaysLoad: false
+});

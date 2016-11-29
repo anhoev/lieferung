@@ -14,11 +14,65 @@ function merge() {
 
 const {mongoose, utils:{makeSelect, makeMultiSelect, makeTypeSelect, makeStyles, makeCustomSelect}} = cms;
 
-const oledb = require('./oledb');
-
 const Food = cms.getModel('Food');
 const Export = cms.getModel('Export');
 const RemovableOrder = cms.getModel('RemovableOrder');
+
+
+function sql(_path) {
+    const oledb = require('./oledb');
+
+    function accessQuery(sql) {
+        return new Promise(function (resolve, reject) {
+            oledb({
+                query: sql,
+                cmd: 'query',
+            }, function (error, result) {
+                if (error) {
+                    console.warn(error);
+                    reject(error);
+                } else {
+                    resolve(result);
+                }
+            });
+        });
+    }
+
+    function accessOpen() {
+        return new Promise(function (resolve, reject) {
+            oledb({
+                dsn: _path,
+                cmd: 'open'
+            }, function (error) {
+                if (error) {
+                    reject(error);
+                } else {
+                    resolve();
+                }
+            });
+        });
+    }
+
+    function accessClose() {
+        return new Promise(function (resolve, reject) {
+            oledb({
+                cmd: 'close'
+            }, function (error) {
+                if (error) {
+                    reject(error);
+                } else {
+                    resolve();
+                }
+            });
+        });
+    }
+
+    return {
+        accessQuery,accessOpen,accessClose
+    }
+}
+
+const {accessQuery,accessOpen,accessClose} = sql(`Provider=Microsoft.ACE.OLEDB.12.0;Data Source=C:\\BONitFlexX\\Umsaetze.mdb;Jet OLEDB:Database Password=213819737111;`);
 
 const Report = cms.registerSchema({
         name: {type: String}
@@ -414,142 +468,13 @@ function * importAuftrags(date) {
     } else {
         yield RemovableOrder.create({date, firstId: records[0].Rechnungsnummer, firstItemId});
     }
+
+
+    // import Protokolls
+
+
 }
 
-function formatNumber(n) {
-    return (n + '').replace(/\./g, ',');
-}
-
-function * updateAuftragRaw(_export) {
-
-    const removeList = [], updateList = [];
-
-    // remove items
-    for (var item of _export.itemRaw) {
-        if (!_.includes(_export.item.map(i => i.Id), item.Id)) {
-            removeList.push(_.find(_export.itemRaw, {Id: item.Id}));
-        }
-    }
-
-    for (var item of removeList) {
-        _.remove(_export.itemRaw, {ID: item.Id});
-        const data = yield accessQuery(`DELETE FROM Umsaetze WHERE ID = ${item.Id}`);
-        if (data) console.log(`Delete Bestellung ${item.Id} successful !`)
-    }
-
-    // update items
-    _.sortBy(_export.itemRaw, ['ID']);
-    for (var i = 0; i < _export.item.length; i++) {
-        const item = _export.item[i];
-        const raw = _.find(_export.itemRaw, {Position: item.position});
-        const _raw = _.pick(raw, ['Artikel_ID', 'Menge', 'Preis', 'ZSumme', 'LSumme']);
-        const _Position = raw.Position;
-        if (raw.Position !== parseInt(i) + 1) raw.Position = parseInt(i) + 1;
-        if (raw) {
-            var _update = {
-                Artikel_ID: item.food.Id,
-                Menge: item.quantity,
-                Preis: item.price,
-                ZSumme: item.price * item.quantity,
-                LSumme: raw.Belagart === 'voll' ? item.price * item.quantity : 0
-            };
-            _.assign(raw, _update);
-
-            // MD5
-
-            if (!_.isEqual(_update, _raw) || _Position !== raw.Position || _export.Id !== raw.ID) {
-                var input = `${raw.Artikel_ID} ${_export.Id} ${raw.Menge} ${formatNumber(raw.ZSumme)} ${formatNumber(raw.Preis)} ${formatNumber(raw.LSumme)} ${raw.Groesse} ${formatNumber(raw.ZSumme)}`;
-                const _md5 = md5(iconv.convert(input)).toUpperCase();
-
-                if (raw.Menge === 0) {
-                    const data = yield accessQuery(`DELETE FROM Bestellung WHERE ID = ${_export.Id} AND Position = ${_Position}`);
-                    if (data) console.log(`Delete Item ${raw.Position} successful!`);
-                } else {
-                    const data = yield accessQuery(`UPDATE Bestellung SET [Position] = ${raw.Position},MD5Hash = "${_md5}", Artikel_ID = "${raw.Artikel_ID}" , Menge = ${raw.Menge} , Preis = ${raw.Preis}, ZSumme = ${raw.ZSumme}, LSumme = ${raw.LSumme} WHERE ID = ${_export.Id} AND Position = ${_Position}`);
-                    if (data) console.log(`Update Item ${raw.Position} successful!`);
-                }
-            }
-        }
-    }
-
-    //updateAuftrag
-    const _Summe = _export.raw.Summe;
-    _export.raw.Summe = _.reduce(_export.itemRaw, function (sum, item) {
-        sum += item.ZSumme;
-        return sum;
-    }, 0);
-
-    _export.raw.Lieferpreis = _.reduce(_export.itemRaw, function (sum, item) {
-        sum += item.LSumme;
-        return sum;
-    }, 0);
-
-    const _md5 = `${_export.raw.TAufNr} ${_export.raw.ID} ${_export.raw.Lokal_ID} ${moment(_export.date).format('DD.MM.YYYY')} ${moment(_export.date).format('HH:mm:ss')} ${formatNumber(_export.raw.Lieferpreis)} ${formatNumber(_export.raw.Rabatt)} ${formatNumber(_export.raw.Summe)}`;
-
-    _export.raw.MD5Hash = md5(iconv.convert(_md5)).toUpperCase();
-
-    if (_Summe !== _export.raw.Summe || _export.Id !== _export.raw.ID) {
-        const data = yield accessQuery(`UPDATE Auftrag SET Summe = ${_export.raw.Summe}, Lieferpreis = ${_export.raw.Lieferpreis}, MD5Hash = "${_export.raw.MD5Hash}" WHERE ID = ${_export.raw.ID}`);
-        if (data) console.log(`Update Auftrag ${_export.raw.ID} successful!`);
-    }
-}
-
-function * checkMD5Hash() {
-    const exports = yield Export.find();
-    for (var _export of exports) {
-        const _md5 = `${_export.raw.TAufNr} ${_export.raw.ID} ${_export.raw.Lokal_ID} ${moment(_export.date).format('DD.MM.YYYY')} ${moment(_export.date).format('HH:mm:ss')} ${formatNumber(_export.raw.Lieferpreis)} ${formatNumber(_export.raw.Rabatt)} ${formatNumber(_export.raw.Summe)}`;
-        console.log(_md5);
-        const _MD5Hash = md5(iconv.convert(_md5)).toUpperCase();
-        if (_export.raw.MD5Hash !== _MD5Hash) console.log('Not OK');
-    }
-}
-
-var _accessPath = `Provider=Microsoft.ACE.OLEDB.12.0;Data Source=C:\\BONitFlexX\\Umsaetze.mdb;Jet OLEDB:Database Password=213819737111;`;
-
-function accessQuery(sql) {
-    return new Promise(function (resolve, reject) {
-        oledb({
-            query: sql,
-            cmd: 'query',
-        }, function (error, result) {
-            if (error) {
-                console.warn(error);
-                reject(error);
-            } else {
-                resolve(result);
-            }
-        });
-    });
-}
-
-function accessOpen() {
-    return new Promise(function (resolve, reject) {
-        oledb({
-            dsn: _accessPath,
-            cmd: 'open'
-        }, function (error) {
-            if (error) {
-                reject(error);
-            } else {
-                resolve();
-            }
-        });
-    });
-}
-
-function accessClose() {
-    return new Promise(function (resolve, reject) {
-        oledb({
-            cmd: 'close'
-        }, function (error) {
-            if (error) {
-                reject(error);
-            } else {
-                resolve();
-            }
-        });
-    });
-}
 
 q.spawn(function *() {
     yield accessOpen();
