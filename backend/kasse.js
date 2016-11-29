@@ -312,7 +312,7 @@ const Report = cms.registerSchema({
 
                 // get first id
 
-                const removableOrder = yield RemovableOrder.findOne({date: moment(date).startOf('date').toDate()}).lean();
+                const removableOrder = yield RemovableOrder.findOne({date: moment(date).startOf('date').toDate()});
                 const firstId = removableOrder.firstId;
                 const firstItemId = removableOrder.firstItemId;
 
