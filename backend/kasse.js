@@ -324,9 +324,9 @@ const Report = cms.registerSchema({
 
                 for (const protocol of protocols) {
 
-                    const columns = Object.keys(protocol).join(',');
+                    const columns = Object.keys(protocol.raw).join(',');
 
-                    const values = Object.keys(protocol).map(k => {
+                    const values = Object.keys(protocol.raw).map(k => {
                         if (typeof protocol[k] === 'string') return `"${protocol[k]}"`;
                         if (protocol[k] instanceof Date) return `#${moment(protocol[k]).format('YYYY-MM-DD HH:mm:ss')}#`;
                         return protocol[k];
