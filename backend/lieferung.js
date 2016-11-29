@@ -418,6 +418,7 @@ const Export = cms.registerSchema({
 
 
 const Protokoll = cms.registerSchema({
+    Id: Number,
     raw: {type: cms.mongoose.Schema.Types.Mixed, form: false},
 }, {
     name: 'Protokoll',
@@ -425,7 +426,7 @@ const Protokoll = cms.registerSchema({
     formatter: `
             <h4></h4>
         `,
-    title: '_id',
+    title: 'Id',
     isViewElement: false,
     autopopulate: true,
     alwaysLoad: false
