@@ -138,7 +138,7 @@ const Report = cms.registerSchema({
                         template: `
                         <div style="padding: 20px;">
                             <div ng-repeat="date in dates">
-                                <button class="btn btn-white">{{ date.summe }} Euro   {{ date.date }}</button>
+                                <button class="btn btn-white" style="min-width: 400px;text-align: center" ng-click="modal.close(date.date)">{{ date.summe }} Euro   {{ date.date }}</button>
                                 
                                 <br>
                                 <br>
@@ -153,7 +153,9 @@ const Report = cms.registerSchema({
                     });
 
                     instance.result.then(function (date) {
-                        $scope.data.date = date;
+                        debugger
+                        
+                        $scope.data.date = moment(date).toDate();
 
                         cms.execServerFn('Report', $scope.model, 'importAuftrag', $scope.data.date).then(function ({data}) {
                             if (data) $scope.data.nrs = data.nrs;
