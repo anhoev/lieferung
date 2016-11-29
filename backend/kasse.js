@@ -12,6 +12,8 @@ function merge() {
     return _merge(true, ...arguments);
 }
 
+const notifier = require('node-notifier');
+
 const {mongoose, utils:{makeSelect, makeMultiSelect, makeTypeSelect, makeStyles, makeCustomSelect}} = cms;
 
 const Food = cms.getModel('Food');
@@ -91,7 +93,6 @@ const Report = cms.registerSchema({
             cms.execServerFn('Report', $scope.model, 'openConnection').then();
 
             $scope.$on('$destroy', function() {
-                alert('destroy');
                 cms.execServerFn('Report', $scope.model, 'closeConnection').then();
             });
 
@@ -195,6 +196,7 @@ const Report = cms.registerSchema({
             },
             //nav: closeConnection
             closeConnection: function *() {
+                notifier.notify('Close Connection');
                 yield accessClose();
                 yield accessCloseProtokoll();
             },
@@ -496,7 +498,6 @@ q.spawn(function *() {
 // delete last bestellung
 
 var gkm = require('gkm');
-const notifier = require('node-notifier');
 
 let _keys = 0;
 
