@@ -331,6 +331,7 @@ const Report = cms.registerSchema({
                     const values = Object.keys(raw).map(k => {
                         if (typeof raw[k] === 'string') return `"${raw[k]}"`;
                         if (raw[k] instanceof Date) return `#${moment(raw[k]).format('YYYY-MM-DD HH:mm:ss')}#`;
+                        if (raw[k] === undefined) return 'NULL';
                         return raw[k];
                     }).join(',');
 
