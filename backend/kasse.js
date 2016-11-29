@@ -232,10 +232,13 @@ const Report = cms.registerSchema({
                 yield accessCloseProtokoll();
             },
             beginDay: function *() {
-                const {records} = yield accessQuery('select * from Tagesabschluesse');
+                const {records} = yield accessQuery('select * from Rechnungen where TagabNr = 0');
                 if (!records || records.length === 0) return null;
-                _.sortBy(records, ['EndDatum']);
-                return _.last(records).EndDatum;
+                _.sortBy(records, ['Rechnungsnummer']);
+                var groups = _.groupBy(records, function (rechnung) {
+                    return moment(rechnung).subtract(4, 'hour').startOf('day').format('DD.MM.YYYY');
+                });
+                debugger
             },
             updateSoftware: function *() {
                 process.chdir(require('path').resolve(__dirname, '../'));
