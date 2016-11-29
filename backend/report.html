@@ -75,7 +75,7 @@
                         -> {{element.modifiedSumBrutto | currency}}
                     </span>
                 </span>
-                <span class="label label-danger pull-right" style="margin-right: 5px;" ng-show="element.showUstId">Bewirtung</span>
+                <span class="label label-danger pull-right" style="margin-right: 5px;" ng-show="element.raw.Zahlart === 'Bewirtung'">Bewirtung</span>
                 <span class="label label-danger pull-right" style="margin-right: 5px;"
                       ng-show="element.storno">Storno</span>
 
