@@ -526,7 +526,7 @@ function * importAuftrags(date) {
 
     let {records: protocols} = yield accessQueryProtokoll(`SELECT * FROM Protokoll WHERE Datum >= #${moment(date).format('YYYY-MM-DD')} 04:00:00# `);
 
-    for (var protocol in protocols) {
+    for (let protocol of protocols) {
         yield Protokoll.create({Buchungsnummer: protocol.Buchungsnummer, raw: protocol});
     }
 }
