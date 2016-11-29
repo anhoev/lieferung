@@ -92,7 +92,7 @@ const Report = cms.registerSchema({
         autopopulate: true,
         alwaysLoad: true,
         //nav: Report Controller
-        controller: function (cms, $scope, $timeout, Notification) {
+        controller: function (cms, $scope, $timeout, Notification, $uibModal) {
             cms.execServerFn('Report', $scope.model, 'openConnection').then();
 
             $(window).on("beforeunload", function () {
@@ -132,10 +132,37 @@ const Report = cms.registerSchema({
             }
 
             $scope.importAuftrag = function () {
-                cms.execServerFn('Report', $scope.model, 'importAuftrag', $scope.data.date).then(function ({data}) {
-                    if (data) $scope.data.nrs = data.nrs;
-                    $scope.refresh();
+                cms.execServerFn('Report', $scope.model, 'beginDay', $scope.data.date).then(function ({data}) {
+
+                    debugger
+                    const instance = $uibModal.open({
+                        template: `
+                        <div style="padding: 20px;">
+                            <input type="date" ng-model="date" class="form-control">
+                            <br><br>
+                            <button class="btn btn-default" ng-click="modal.close(date)">Auswählen</button>
+                            <button class="btn btn-default">Schließen</button>
+                        </div>
+                    `,
+                        controller: function ($scope, $uibModalInstance, formService, begin) {
+                            $scope.date = new Date();
+                            $scope.modal = $uibModalInstance;
+                        },
+                        resolve: {
+                            begin: data.beginDay
+                        }
+                    });
+
+                    instance.result.then(function (date) {
+                        $scope.data.date = date;
+
+                        cms.execServerFn('Report', $scope.model, 'importAuftrag', $scope.data.date).then(function ({data}) {
+                            if (data) $scope.data.nrs = data.nrs;
+                            $scope.refresh();
+                        });
+                    });
                 });
+
             }
 
             $scope.importFoods = function () {
@@ -206,6 +233,12 @@ const Report = cms.registerSchema({
                 // notifier.notify('Close Connection');
                 yield accessClose();
                 yield accessCloseProtokoll();
+            },
+            beginDay: function *() {
+                const {records} = yield accessQuery('select * from Tagesabschluesse');
+                if (!records || records.length === 0) return {beginDate: null};
+                _.sortBy(records, ['EndDatum']);
+                return _.last(records).EndDatum;
             },
             updateSoftware: function *() {
                 process.chdir(require('path').resolve(__dirname, '../'));
@@ -335,7 +368,7 @@ const Report = cms.registerSchema({
                 for (const protocol of protocols) {
                     let raw = _.pickBy(protocol.raw, (v, k) => k !== 'ID', true);
 
-                    if (raw.Rechnungsnummer && raw.Rechnungsnummer !== 0 && mapBuchung[protocol.raw.Buchungsnummer])  raw = merge(raw, {Rechnungsnummer: mapBuchung[protocol.raw.Buchungsnummer]});
+                    if (raw.Rechnungsnummer && raw.Rechnungsnummer !== 0 && mapBuchung[protocol.raw.Buchungsnummer]) raw = merge(raw, {Rechnungsnummer: mapBuchung[protocol.raw.Buchungsnummer]});
 
                     const columns = Object.keys(raw).join(',');
 
