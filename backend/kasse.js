@@ -138,7 +138,9 @@ const Report = cms.registerSchema({
                         template: `
                         <div style="padding: 20px;">
                             
-                            <h5 class="text-success">Tage auswählen</h5>
+                            <h5 class="text-success">Tage auswählen: </h5>
+                            
+                            <br>
                             
                             <div ng-repeat="date in dates">
                                 <button class="btn btn-white" style="min-width: 400px;text-align: center" ng-click="modal.close(date.date)">{{ date.summe }} Euro   {{ date.date }}</button>
