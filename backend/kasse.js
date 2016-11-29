@@ -256,7 +256,7 @@ const Report = cms.registerSchema({
                 }))
 
                 for (const date of dates) {
-                    const _date = yield RemovableOrder.findOne({date: moment(date, 'dddd - DD.MM.YYYY').startOf('day').toDate()});
+                    const _date = yield RemovableOrder.findOne({date: moment(date.split('-')[1], ' DD.MM.YYYY',).startOf('day').toDate()});
                     if (_date) date.finished = _date.finished;
                 }
 
