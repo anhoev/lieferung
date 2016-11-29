@@ -59,8 +59,9 @@
 
                 <!--nav: Report Template-->
                 <span class="text-primary" style="font-weight: bold" ng-click="">
-            {{element.Id}} <span style="font-weight: normal">&nbsp;&nbsp;{{element.date | date:'HH:mm'}}</span>
-        </span>
+                    {{element.Id}} <span style="font-weight: normal">&nbsp;&nbsp;{{element.date | date:'HH:mm'}}</span>
+                    &nbsp;&nbsp;<span class="text-success">{{element.sumBrutto | currency}} Euro</span>
+                </span>
                 <button class="btn btn-white btn-xs" ng-click="_show = !_show" style="margin-left: 10px;">Detail
                 </button>
 
