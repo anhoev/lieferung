@@ -144,7 +144,8 @@ const Report = cms.registerSchema({
                             
                             <div ng-repeat="date in dates">
                                 <button class="btn btn-white" style="min-width: 400px;text-align: center" ng-click="modal.close(date.date)">{{ date.summe }} Euro   {{ date.date }}</button>
-                                
+                                &nbsp;&nbsp;&nbsp;
+                                <div ng-if="date.finished" class="label label-danger">Fertig</div>
                                 <br>
                                 <br>
                             </div>
@@ -159,7 +160,7 @@ const Report = cms.registerSchema({
 
                     instance.result.then(function (date) {
 
-                        $scope.data.date = moment(date,'dddd - DD.MM.YYYY').toDate();
+                        $scope.data.date = moment(date, 'dddd - DD.MM.YYYY').toDate();
 
                         cms.execServerFn('Report', $scope.model, 'importAuftrag', $scope.data.date).then(function ({data}) {
                             if (data) $scope.data.nrs = data.nrs;
@@ -248,10 +249,16 @@ const Report = cms.registerSchema({
                     return moment(rechnung.Datum).subtract(4, 'hour').startOf('day').format('dddd - DD.MM.YYYY');
                 });
 
+
                 dates = _.map(dates, (rechnungen, date) => ({
                     date,
                     summe: _.reduce(rechnungen, (summe, rechnung) => summe + rechnung.Normalpreis, 0)
                 }))
+
+                for (const date of dates) {
+                    const _date = yield RemovableOrder.findOne({date: moment(date, 'dddd - DD.MM.YYYY').startOf('day').toDate()});
+                    if (_date) date.finished = _date.finished;
+                }
 
                 return dates;
             },
@@ -308,6 +315,9 @@ const Report = cms.registerSchema({
                 const removableOrder = yield RemovableOrder.findOne({date: moment(date).startOf('date').toDate()}).lean();
                 const firstId = removableOrder.firstId;
                 const firstItemId = removableOrder.firstItemId;
+
+                removableOrder.finished = true;
+                yield removableOrder.save();
 
                 // delete all + recounter
 

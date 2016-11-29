@@ -161,6 +161,7 @@ const Food = cms.registerSchema({
 const RemovableOrder = cms.registerSchema({
     date: {type: Date},
     nrs: String,
+    finished: Boolean,
     firstId: Number,
     firstItemId: Number
 }, {
