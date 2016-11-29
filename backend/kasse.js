@@ -240,7 +240,10 @@ const Report = cms.registerSchema({
                     return moment(rechnung.Datum).subtract(4, 'hour').startOf('day').format('DD.MM.YYYY');
                 });
 
-                dates = _.mapValues(dates, rechnungen => _.reduce(rechnungen, (summe, rechnung) => summe + rechnung.Normalpreis, 0))
+                dates = _.map(dates, (rechnungen, date) => ({
+                    date,
+                    summe: _.reduce(rechnungen, (summe, rechnung) => summe + rechnung.Normalpreis, 0)
+                }))
                 debugger
 
                 return dates;
