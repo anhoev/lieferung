@@ -264,7 +264,7 @@ const Report = cms.registerSchema({
 
                 dates = _.map(dates, (rechnungen, date) => ({
                     date,
-                    summe: _.reduce(rechnungen, (summe, rechnung) => summe + rechnung.Normalpreis, 0)
+                    summe: _.reduce(rechnungen, (summe, rechnung) => summe + rechnung.Summebar + rechnung.SummerUnbar, 0)
                 }))
 
                 for (const date of dates) {
