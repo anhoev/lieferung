@@ -85,7 +85,7 @@
                         <form class="cms-form form-horizontal">
                             <div ng-repeat="item in element.item">
                                 <div class="row" style="margin-top: 10px;">
-                                    <div class="col-xs-6" style="padding-top: 6px;">
+                                    <div class="col-xs-10" style="padding-top: 6px;">
                                     <span class="text-violet" style="background-color: transparent;color: #555"
                                           ng-style="{'text-decoration':item.modifiedQuantity === 0 ? 'line-through': 'none', 'font-style': (item.modifiedQuantity !== item.quantity && item.modifiedQuantity !== undefined)?'italic':'inherit'}">
                                         {{item.food}} ({{item.price | currency}})
@@ -94,14 +94,14 @@
                                     <div class="col-xs-2">
                                         <input class="form-control" type="number" disabled="true" ng-model="item.quantity">
                                     </div>
-                                    <div class="col-xs-2">
+                                    <!--<div class="col-xs-2">
                                         <input class="form-control" type="text" disabled="true" ng-model="item.modifiedQuantity">
                                     </div>
                                     <div class="col-xs-2">
                                         <button class="btn btn-white btn-sm" disabled="true" ng-click="element.item.splice($index, 1)">
                                             Löschen
                                         </button>
-                                    </div>
+                                    </div>-->
                                 </div>
                             </div>
 
@@ -109,7 +109,7 @@
 
                         <br>
 
-                        <button class="cms-btn btn-outline btn btn-success btn-xs" disabled="true" ng-click="save(element)">Speichern
+                        <button class="cms-btn btn-outline btn btn-success btn-xs" style="display: none" disabled="true" ng-click="save(element)">Speichern
                         </button>
                     </div>
 
