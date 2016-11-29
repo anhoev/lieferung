@@ -62,8 +62,8 @@
                     {{element.Id}} <span style="font-weight: normal">&nbsp;&nbsp;{{element.date | date:'HH:mm'}}</span>
                     &nbsp;&nbsp;<span class="text-success">{{element.sumBrutto | currency}}</span>
                 </span>
-                <button class="btn btn-white btn-xs" ng-click="_show = !_show" style="margin-left: 10px;">Detail
-                </button>
+                <button class="btn btn-white btn-xs" ng-click="_show = !_show" style="margin-left: 10px;">Detail</button>
+                <button class="btn btn-white btn-xs" ng-show="element.raw.Zahlart !== 'Bewirtung'" ng-click="data.list.splice($index,1); delete(element)" style="margin-left: 10px;">Löschen</button>
 
                 <span class="label label-danger pull-right" style="margin-right: 10px;cursor: pointer;"
                       ng-click="data.list.splice($index,1); delete(element)" ng-show="element.raw.Zahlart !== 'Bewirtung'">Löschen</span>
