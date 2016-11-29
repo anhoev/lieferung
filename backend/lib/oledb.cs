@@ -20,19 +20,19 @@ using System.Threading.Tasks;
 public class Startup
 {
     OleDbConnection connection;
-
+    string connectionString;    
 
     public async Task<object> Invoke(IDictionary<string, object> parameters)
     {
         string cmd = ((string)parameters["cmd"]);
         if (cmd.Equals("open"))
         {
-            string connectionString = ((string)parameters["dsn"]);
+            this.connectionString = ((string)parameters["dsn"]);
             if (!string.IsNullOrEmpty(connectionString))
             {
                 try
                 {
-                    this.connection = new OleDbConnection(connectionString);
+                    this.connection = new OleDbConnection(this.connectionString);
                     await connection.OpenAsync();
                 }
                 catch (Exception e)
@@ -50,6 +50,7 @@ public class Startup
         }
         else
         {
+            Console.WriteLine("connectionString: "+ this.connectionString);
             string commandString = ((string)parameters["query"]);
             string command = commandString.Substring(0, 6).Trim().ToLower();
             switch (command)
