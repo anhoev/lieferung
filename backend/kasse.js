@@ -137,6 +137,9 @@ const Report = cms.registerSchema({
                     const instance = $uibModal.open({
                         template: `
                         <div style="padding: 20px;">
+                            
+                            <h5 class="text-success">Tage auswählen</h5>
+                            
                             <div ng-repeat="date in dates">
                                 <button class="btn btn-white" style="min-width: 400px;text-align: center" ng-click="modal.close(date.date)">{{ date.summe }} Euro   {{ date.date }}</button>
                                 
@@ -154,7 +157,7 @@ const Report = cms.registerSchema({
 
                     instance.result.then(function (date) {
                         debugger
-                        
+
                         $scope.data.date = moment(date).toDate();
 
                         cms.execServerFn('Report', $scope.model, 'importAuftrag', $scope.data.date).then(function ({data}) {
