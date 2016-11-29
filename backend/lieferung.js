@@ -418,7 +418,8 @@ const Export = cms.registerSchema({
 
 
 const Protokoll = cms.registerSchema({
-    Id: Number,
+    Buchungsnummer: Number,
+    deleted: Boolean,
     raw: {type: cms.mongoose.Schema.Types.Mixed, form: false},
 }, {
     name: 'Protokoll',
@@ -426,7 +427,7 @@ const Protokoll = cms.registerSchema({
     formatter: `
             <h4></h4>
         `,
-    title: 'Id',
+    title: 'Buchungsnummer',
     isViewElement: false,
     autopopulate: true,
     alwaysLoad: false

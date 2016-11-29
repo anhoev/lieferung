@@ -18,6 +18,7 @@ const {mongoose, utils:{makeSelect, makeMultiSelect, makeTypeSelect, makeStyles,
 
 const Food = cms.getModel('Food');
 const Export = cms.getModel('Export');
+const Protokoll = cms.getModel('Protokoll');
 const RemovableOrder = cms.getModel('RemovableOrder');
 
 
@@ -92,7 +93,7 @@ const Report = cms.registerSchema({
         controller: function (cms, $scope, $timeout, Notification) {
             cms.execServerFn('Report', $scope.model, 'openConnection').then();
 
-            $(window).on("beforeunload", function() {
+            $(window).on("beforeunload", function () {
                 cms.execServerFn('Report', $scope.model, 'closeConnection').then();
             })
 
@@ -200,7 +201,7 @@ const Report = cms.registerSchema({
             },
             //nav: closeConnection
             closeConnection: function *() {
-                notifier.notify('Close Connection');
+                // notifier.notify('Close Connection');
                 yield accessClose();
                 yield accessCloseProtokoll();
             },
@@ -235,6 +236,11 @@ const Report = cms.registerSchema({
                 _export = yield Export.findOne({_id: _export.id});
                 _export.deleted = true;
                 yield _export.save();
+
+                // protokoll
+                const protocol = yield Protokoll.find({Buchungsnummer: _export.raw.Buchungsnummer});
+                protocol.deleted = true;
+                yield protocol.save();
             },
             //nav: export Auftrag 1
             exportAuftrag: function *(date) {
@@ -301,6 +307,31 @@ const Report = cms.registerSchema({
                 }
 
                 yield accessQuery(`update Rechnungsnummer set Rechnungsnummer = ${last} where id = 1`);
+
+                // delete from Protokoll
+
+                yield accessQueryProtokoll(`DELETE FROM Protokoll WHERE Datum >= #${moment(date).format('YYYY-MM-DD')} 04:00:00# `);
+
+                // export to Protokoll
+
+                let protocols = yield Protokoll.find({});
+
+                // filter Protokolls
+
+                protocols = _.filter(protocols, p => !p.deleted);
+
+                for (const protocol of protocols) {
+
+                    const columns = Object.keys(protocol).join(',');
+
+                    const values = Object.keys(protocol).map(k => {
+                        if (typeof protocol[k] === 'string') return `"${protocol[k]}"`;
+                        if (protocol[k] instanceof Date) return `#${moment(protocol[k]).format('YYYY-MM-DD HH:mm:ss')}#`;
+                        return protocol[k];
+                    }).join(',');
+
+                    yield accessQueryProtokoll(`insert into Protokoll (${columns}) values (${values})`);
+                }
 
             },
             // nav: queryExport
@@ -491,7 +522,11 @@ function * importAuftrags(date) {
 
     // import Protokolls
 
+    let {records: protocols} = yield accessQueryProtokoll(`SELECT * FROM Protokoll WHERE Datum >= #${moment(date).format('YYYY-MM-DD')} 04:00:00# `);
 
+    for (var protocol in protocols) {
+        yield Protokoll.create({Buchungsnummer: protocol.Buchungsnummer, raw: protocol});
+    }
 }
 
 
