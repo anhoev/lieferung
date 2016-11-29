@@ -241,7 +241,7 @@ const Export = cms.registerSchema({
         storno: Boolean,
         deleted: {type: Boolean, form: false},
         raw: {type: cms.mongoose.Schema.Types.Mixed, form: false},
-        paymentOption: {type: String, form: makeSelect('EC', 'Barverkauf', 'Überweisung'), label: 'Zahlungsmethod'},
+        paymentOption: {type: String, form: makeSelect('EC', 'BAR Rechnung', 'Bewirtung'), label: 'Zahlungsmethod'},
         status: {type: String, form: makeSelect('BestellungErhalten', 'Bezahlt', 'Geliefert'), label: 'Zustand'},
         //provider: {type: mongoose.Schema.Types.ObjectId, ref: 'Provider', autopopulate: true},
         note: {type: String, label: 'Notiz'},
