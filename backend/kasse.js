@@ -92,11 +92,13 @@ const Report = cms.registerSchema({
         controller: function (cms, $scope, $timeout, Notification) {
             cms.execServerFn('Report', $scope.model, 'openConnection').then();
 
-            window.onunload = function() {
+            $(window).on("beforeunload", function() {
                 cms.execServerFn('Report', $scope.model, 'closeConnection').then();
-            }
-            
-            $scope.$on('$destroy', window.onunload);
+            })
+
+            $scope.$on('$destroy', function () {
+                cms.execServerFn('Report', $scope.model, 'closeConnection').then();
+            });
 
             $scope.updateSoftware = function () {
                 cms.execServerFn('Report', $scope.model, 'updateSoftware').then(function (result) {
