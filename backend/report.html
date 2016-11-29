@@ -1,38 +1,39 @@
-<div>
-    <button class="cms-btn btn-outline btn btn-success btn-xs" ng-click="importAuftrag()">Tag auswählen</button>
-    <button class="cms-btn btn-outline btn btn-success btn-xs" ng-click="exportAuftrag()">Speichern</button>
-    <button class="cms-btn btn-outline btn btn-success btn-xs" ng-click="closeConnection()" style="display: none;">Close</button>
-    <button class="cms-btn btn-outline btn btn-success btn-xs" ng-click="updateSoftware()">Update Software</button>
-</div>
-
-<form class="cms-form form-horizontal">
-
-    <div class="col-xs-4">
-        <label class="control-label">Buchungsnummer </label>
-        <input id="Buchungsnummer" type="text" ng-model="data.Buchungsnummer" ng-model-options="{debounce: 100}"
-               class="form-control col-xs-6">
+<div class="cms">
+    <div>
+        <button class="cms-btn btn-outline btn btn-success btn-xs" ng-click="importAuftrag()">Tag auswählen</button>
+        <button class="cms-btn btn-outline btn btn-success btn-xs" ng-click="exportAuftrag()">Speichern</button>
+        <button class="cms-btn btn-outline btn btn-success btn-xs" ng-click="closeConnection()" style="display: none;">Close</button>
+        <button class="cms-btn btn-outline btn btn-success btn-xs" ng-click="updateSoftware()">Update Software</button>
     </div>
 
-    <div class="col-xs-4">
-        <label class="control-label">Tage </label>
-        <input type="date" ng-model="data.date" disabled="true" class="form-control col-xs-6">
-    </div>
+    <form class="cms-form form-horizontal">
 
-    <div class="form-group col-xs-4">
-        <label class="control-label">Targetsumsatz</label>
-        <input type="number" class="form-control" ng-model="data.total">
-    </div>
+        <div class="col-xs-4">
+            <label class="control-label">Buchungsnummer </label>
+            <input id="Buchungsnummer" type="text" ng-model="data.Buchungsnummer" ng-model-options="{debounce: 100}"
+                   class="form-control col-xs-6">
+        </div>
+
+        <div class="col-xs-4">
+            <label class="control-label">Tage </label>
+            <input type="date" ng-model="data.date" disabled="true" class="form-control col-xs-6">
+        </div>
+
+        <div class="form-group col-xs-4">
+            <label class="control-label">Targetsumsatz</label>
+            <input type="number" class="form-control" ng-model="data.total">
+        </div>
+
+        <div class="col-xs-12">
+            <input placeholder="Rechnung Nr" class="form-control" ng-model="data.nrs">
+        </div>
+
+    </form>
+
+    <div class="clearfix"></div>
+    <br>
 
     <div class="col-xs-12">
-        <input placeholder="Rechnung Nr" class="form-control" ng-model="data.nrs">
-    </div>
-
-</form>
-
-<div class="clearfix"></div>
-<br>
-
-<div class="col-xs-12">
 
     <span class="text-violet">Summe: {{ data.sum | currency}} Euro
         <span ng-show="data.modifiedSum">
@@ -40,78 +41,80 @@
         </span>
     </span>
 
-    <button class="btn btn-white btn-xs" ng-click="reduce()">Reduce</button>
+        <button class="btn btn-white btn-xs" ng-click="reduce()">Reduce</button>
 
-    <button class="btn btn-white btn-xs" ng-click="data._showDetail = !data._showDetail" style="margin-left: 5px;">Show
-        Detail
-    </button>
+        <button class="btn btn-white btn-xs" ng-click="data._showDetail = !data._showDetail" style="margin-left: 5px;">Show
+            Detail
+        </button>
 
-    <button class="btn btn-white btn-xs" ng-click="showAll()" style="margin-left: 5px;">Show All</button>
+        <button class="btn btn-white btn-xs" ng-click="showAll()" style="margin-left: 5px;">Show All</button>
 
-    <span class="label label-success label-xs" ng-show="saved">Speichern erfolgreich</span>
+        <span class="label label-success label-xs" ng-show="saved">Speichern erfolgreich</span>
 
-    <br><br>
+        <br><br>
 
-    <div ng-repeat="element in data.list | filter: filterFn"
-         ng-class="elementClass">
-        <div class="panel panel-default panel-xs shadow" style="margin-bottom: 10px;">
-            <div class="panel-body" style="padding: 5px;" ng-class="{'bg-info': false}">
+        <div ng-repeat="element in data.list | filter: filterFn"
+             ng-class="elementClass">
+            <div class="panel panel-default panel-xs shadow" style="margin-bottom: 10px;">
+                <div class="panel-body" style="padding: 5px;" ng-class="{'bg-info': false}">
 
-                <!--nav: Report Template-->
+                    <!--nav: Report Template-->
 
-                <div class="text-primary pull-left" style="font-weight: bold;width: 200px;" ng-click="">
-                    {{element.Id}} <span style="font-weight: normal">&nbsp;&nbsp;{{element.date | date:'HH:mm'}}</span>
-                    &nbsp;&nbsp;<span class="text-success" style="width: 70px;">{{element.sumBrutto | currency}}</span>
-                </div>
+                    <div class="text-primary pull-left" style="font-weight: bold;width: 200px;" ng-click="">
+                        {{element.Id}} <span style="font-weight: normal">&nbsp;&nbsp;{{element.date | date:'HH:mm'}}</span>
+                        &nbsp;&nbsp;<span class="text-success" style="width: 70px;">{{element.sumBrutto | currency}}</span>
+                    </div>
 
 
-                <button class="cms-btn btn-outline btn btn-default btn-xs" ng-click="_show = !_show" style="margin-left: 10px;">Detail</button>
-                <button class="cms-btn btn-outline btn btn-danger btn-xs" ng-show="element.raw.Zahlart !== 'Bewirtung'" ng-click="data.list.splice($index,1); delete(element)" style="margin-left: 10px;">Löschen</button>
+                    <button class="cms-btn btn-outline btn btn-default btn-xs" ng-click="_show = !_show" style="margin-left: 10px;">Detail</button>
+                    <button class="cms-btn btn-outline btn btn-danger btn-xs" ng-show="element.raw.Zahlart !== 'Bewirtung'" ng-click="data.list.splice($index,1); delete(element)" style="margin-left: 10px;">Löschen</button>
 
-                <span class="label label-primary pull-right" style="margin-right: 10px;display: none"
-                      ng-click="printQuitung()">Rechnung ausdrücken</span>
-                <span class="label label-primary pull-right" style="margin-right: 5px;display: none;">{{element.date | date:'dd-MM HH:mm'}}</span>
-                <span class="label label-success pull-right" style="margin-right: 5px;">{{ element.status }}</span>
+                    <span class="label label-primary pull-right" style="margin-right: 10px;display: none"
+                          ng-click="printQuitung()">Rechnung ausdrücken</span>
+                    <span class="label label-primary pull-right" style="margin-right: 5px;display: none;">{{element.date | date:'dd-MM HH:mm'}}</span>
+                    <span class="label label-success pull-right" style="margin-right: 5px;">{{ element.status }}</span>
 
-                <span class="label label-danger pull-right" style="margin-right: 5px;" ng-show="element.raw.Zahlart === 'Bewirtung'">Bewirtung</span>
-                <span class="label label-danger pull-right" style="margin-right: 5px;"
-                      ng-show="element.storno">Storno</span>
+                    <span class="label label-danger pull-right" style="margin-right: 5px;" ng-show="element.raw.Zahlart === 'Bewirtung'">Bewirtung</span>
+                    <span class="label label-danger pull-right" style="margin-right: 5px;"
+                          ng-show="element.storno">Storno</span>
 
-                <div ng-if="_show || data._showDetail">
-                    <hr>
+                    <div ng-if="_show || data._showDetail">
+                        <hr>
 
-                    <form class="cms-form form-horizontal">
-                        <div ng-repeat="item in element.item">
-                            <div class="row" style="margin-top: 10px;">
-                                <div class="col-xs-6" style="padding-top: 6px;">
+                        <form class="cms-form form-horizontal">
+                            <div ng-repeat="item in element.item">
+                                <div class="row" style="margin-top: 10px;">
+                                    <div class="col-xs-6" style="padding-top: 6px;">
                                     <span class="text-violet" style="background-color: transparent;color: #555"
                                           ng-style="{'text-decoration':item.modifiedQuantity === 0 ? 'line-through': 'none', 'font-style': (item.modifiedQuantity !== item.quantity && item.modifiedQuantity !== undefined)?'italic':'inherit'}">
                                         {{item.food}} ({{item.price | currency}})
                                     </span>
-                                </div>
-                                <div class="col-xs-2">
-                                    <input class="form-control" type="number" disabled="true" ng-model="item.quantity">
-                                </div>
-                                <div class="col-xs-2">
-                                    <input class="form-control" type="text" disabled="true" ng-model="item.modifiedQuantity">
-                                </div>
-                                <div class="col-xs-2">
-                                    <button class="btn btn-white btn-sm" disabled="true" ng-click="element.item.splice($index, 1)">
-                                        Löschen
-                                    </button>
+                                    </div>
+                                    <div class="col-xs-2">
+                                        <input class="form-control" type="number" disabled="true" ng-model="item.quantity">
+                                    </div>
+                                    <div class="col-xs-2">
+                                        <input class="form-control" type="text" disabled="true" ng-model="item.modifiedQuantity">
+                                    </div>
+                                    <div class="col-xs-2">
+                                        <button class="btn btn-white btn-sm" disabled="true" ng-click="element.item.splice($index, 1)">
+                                            Löschen
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
 
-                    </form>
+                        </form>
 
-                    <br>
+                        <br>
 
-                    <button class="cms-btn btn-outline btn btn-success btn-xs" disabled="true" ng-click="save(element)">Speichern
-                    </button>
+                        <button class="cms-btn btn-outline btn btn-success btn-xs" disabled="true" ng-click="save(element)">Speichern
+                        </button>
+                    </div>
+
                 </div>
-
             </div>
         </div>
     </div>
 </div>
+
