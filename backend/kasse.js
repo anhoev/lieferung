@@ -120,7 +120,7 @@ const Report = cms.registerSchema({
                     if (_export) {
                         $timeout(function () {
                             $scope.data.nrs += ' ' + _export.Id;
-                            $scope.data.Buchungsnummer = '';
+                            $scope.data.Buchungsnummer = null;
                         })
                     }
                 }
