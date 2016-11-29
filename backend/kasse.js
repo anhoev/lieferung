@@ -236,7 +236,7 @@ const Report = cms.registerSchema({
                 if (!records || records.length === 0) return null;
                 _.sortBy(records, ['Rechnungsnummer']);
                 var groups = _.groupBy(records, function (rechnung) {
-                    return moment(rechnung).subtract(4, 'hour').startOf('day').format('DD.MM.YYYY');
+                    return moment(rechnung.Datum).subtract(4, 'hour').startOf('day').format('DD.MM.YYYY');
                 });
                 debugger
             },
