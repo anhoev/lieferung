@@ -442,7 +442,7 @@ const Report = cms.registerSchema({
                 }, 0);
 
                 const modifiedSum = _.reduce(exports, (sum, _export) => {
-                    if (!_export.storno) sum += _export.modifiedSumBrutto;
+                    if (!_export.deleted) sum += _export.sumBrutto;
                     return sum;
                 }, 0);
 
