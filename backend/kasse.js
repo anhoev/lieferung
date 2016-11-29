@@ -91,6 +91,7 @@ const Report = cms.registerSchema({
             cms.execServerFn('Report', $scope.model, 'openConnection').then();
 
             $scope.$on('$destroy', function() {
+                alert('destroy');
                 cms.execServerFn('Report', $scope.model, 'closeConnection').then();
             });
 
@@ -194,7 +195,6 @@ const Report = cms.registerSchema({
             },
             //nav: closeConnection
             closeConnection: function *() {
-                console.log('Close connection');
                 yield accessClose();
                 yield accessCloseProtokoll();
             },
