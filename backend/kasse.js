@@ -23,11 +23,12 @@ const RemovableOrder = cms.getModel('RemovableOrder');
 
 
 function sql(_path) {
-    const oledb = require('./oledb');
+    const oledbClass = require('./oledb');
+    const oledb = new oledbClass();
 
     function accessQuery(sql) {
         return new Promise(function (resolve, reject) {
-            oledb({
+            oledb.run({
                 query: sql,
                 cmd: 'query',
             }, function (error, result) {
@@ -43,7 +44,7 @@ function sql(_path) {
 
     function accessOpen() {
         return new Promise(function (resolve, reject) {
-            oledb({
+            oledb.run({
                 dsn: _path,
                 cmd: 'open'
             }, function (error) {
@@ -58,7 +59,7 @@ function sql(_path) {
 
     function accessClose() {
         return new Promise(function (resolve, reject) {
-            oledb({
+            oledb.run({
                 cmd: 'close'
             }, function (error) {
                 if (error) {
