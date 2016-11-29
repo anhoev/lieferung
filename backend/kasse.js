@@ -240,9 +240,12 @@ const Report = cms.registerSchema({
                 yield _export.save();
 
                 // protokoll
-                const protocol = yield Protokoll.find({Buchungsnummer: _export.raw.Buchungsnummer});
-                protocol.deleted = true;
-                yield protocol.save();
+                const protocols = yield Protokoll.find({Buchungsnummer: _export.raw.Buchungsnummer});
+                for (const protocol of protocols) {
+                    protocol.deleted = true;
+                    yield protocol.save();
+                }
+
             },
             //nav: export Auftrag 1
             exportAuftrag: function *(date) {
