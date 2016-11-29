@@ -19,8 +19,6 @@ var adodb = edge.func(__dirname + '/lib/oledb.cs');
  * Module exports.
  */
 
-module.exports = oledb;
-
 class oledb {
     constructor() {
         this.adodb = edge.func(__dirname + '/lib/oledb.cs');
@@ -50,3 +48,5 @@ class oledb {
         });
     }
 }
+
+module.exports = oledb;
