@@ -9,8 +9,8 @@
 
     <div class="col-xs-4">
         <label class="control-label">Buchungsnummer </label>
-        <input id="Buchungsnummer" type="text" ng-model="data.Buchungsnummer"
-               ng-keypress="barcode($event,data.Buchungsnummer)" class="form-control col-xs-6">
+        <input id="Buchungsnummer" type="text" ng-model="data.Buchungsnummer" ng-model-options="{debounce: 100}"
+               class="form-control col-xs-6">
     </div>
 
     <div class="col-xs-4">
