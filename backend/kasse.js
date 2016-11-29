@@ -133,12 +133,11 @@ const Report = cms.registerSchema({
 
             $scope.importAuftrag = function () {
                 cms.execServerFn('Report', $scope.model, 'beginDay', $scope.data.date).then(function ({data}) {
-
-                    debugger
+                    
                     const instance = $uibModal.open({
                         template: `
                         <div style="padding: 20px;">
-                            <input type="date" ng-model="date" ng-min="" class="form-control">
+                            <input type="date" ng-model="date" ng-min="begin" class="form-control">
                             <br><br>
                             <button class="btn btn-default" ng-click="modal.close(date)">Auswählen</button>
                             <button class="btn btn-default">Schließen</button>
