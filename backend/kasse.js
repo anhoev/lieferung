@@ -228,6 +228,7 @@ const Report = cms.registerSchema({
             $scope.delete = function (_export) {
                 cms.execServerFn('Report', $scope.model, 'delete', _export).then(function () {
                     _export.deleted = true;
+                    $scope.refresh();
                 });
             }
 
