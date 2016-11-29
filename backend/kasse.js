@@ -235,10 +235,12 @@ const Report = cms.registerSchema({
                 const {records} = yield accessQuery('select * from Rechnungen where TagabNr = 0');
                 if (!records || records.length === 0) return null;
                 _.sortBy(records, ['Rechnungsnummer']);
-                var dates = _.groupBy(records, function (rechnung) {
+                
+                let dates = _.groupBy(records, function (rechnung) {
                     return moment(rechnung.Datum).subtract(4, 'hour').startOf('day').format('DD.MM.YYYY');
-                }).map(rechnungen => _.reduce(rechnungen, (summe, rechnung) => summe + rechnung.Normalpreis, 0));
+                });
 
+                dates = _.map(dates, rechnungen => _.reduce(rechnungen, (summe, rechnung) => summe + rechnung.Normalpreis, 0))
                 debugger
 
                 return dates;
