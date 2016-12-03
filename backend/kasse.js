@@ -159,7 +159,7 @@ const Report = cms.registerSchema({
                             <br>
                             
                             <div ng-repeat="date in dates">
-                                <button class="btn btn-white" style="min-width: 400px;text-align: center" ng-click="modal.close(date.date)">{{ date.summe }} Euro   {{ date.date }}</button>
+                                <button class="btn btn-white" style="min-width: 400px;text-align: center" ng-click="modal.close(date.date)">{{ date.summe | currency}} Euro   {{ date.date }}</button>
                                 &nbsp;&nbsp;&nbsp;
                                 <div ng-if="date.finished" class="label label-danger">Fertig</div>
                                 <br>
