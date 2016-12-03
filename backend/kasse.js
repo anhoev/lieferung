@@ -612,7 +612,7 @@ function * importAuftrags(date) {
             })
         }
 
-        Export.findOneAndUpdate({_id: _export._id}, _export, {
+        yield Export.findOneAndUpdate({_id: _export._id}, _export, {
             upsert: true,
             setDefaultsOnInsert: true
         }).exec();
@@ -636,9 +636,8 @@ function * importAuftrags(date) {
     let {records: protocols} = yield accessQueryProtokoll(`SELECT * FROM Protokoll WHERE Datum >= #${moment(date).format('YYYY-MM-DD')} 04:00:00# `);
 
     for (let protocol of protocols) {
-        Protokoll.create({Buchungsnummer: protocol.Buchungsnummer, raw: protocol});
+        yield Protokoll.create({Buchungsnummer: protocol.Buchungsnummer, raw: protocol});
     }
-
 }
 
 
