@@ -293,9 +293,9 @@ const Report = cms.registerSchema({
             },
             updateSoftware: function *() {
                 process.chdir(require('path').resolve(__dirname, '../'));
-                var cmd = 'git pull';
                 try {
-                    var out = require('child_process').execSync(cmd, 'utf-8');
+                    var out = require('child_process').execSync('git pull', 'utf-8');
+                    out += require('child_process').execSync('npm install', 'utf-8');
                     return out.toString();
                 } catch (e) {
                     return e.message;
