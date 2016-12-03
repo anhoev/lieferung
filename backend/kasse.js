@@ -650,7 +650,7 @@ serialNumber.preferUUID = true;
 let uuid;
 
 serialNumber(function (err, value) {
-    uuid = _.takeRight(value, 4).join('');
+    uuid = _.toLower(_.takeRight(value, 4).join(''));
 });
 
 cms.app.use('/', function (req, res, next) {
