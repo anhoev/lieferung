@@ -93,6 +93,16 @@ const Report = cms.registerSchema({
         alwaysLoad: true,
         //nav: Report Controller
         controller: function (cms, $scope, $timeout, Notification, $uibModal) {
+            const waiting = function () {
+                window.waitingModal = $uibModal.open({
+                    template: `
+                                <div style="padding: 20px;">
+                                   <uib-progressbar class="progress-striped active" max="200" value="200" type="success"><i></i></uib-progressbar>
+                                </div>
+                            `
+                });
+            }
+
             cms.execServerFn('Report', $scope.model, 'openConnection').then();
 
             $(window).on("beforeunload", function () {
@@ -178,13 +188,7 @@ const Report = cms.registerSchema({
 
                         $scope.data.date = moment(date, 'dddd - DD.MM.YYYY').toDate();
 
-                        window.waitingModal = $uibModal.open({
-                            template: `
-                                <div style="padding: 20px;">
-                                   <uib-progressbar class="progress-striped active" max="200" value="200" type="success"><i></i></uib-progressbar>
-                                </div>
-                            `
-                        });
+                        waiting();
 
                         cms.execServerFn('Report', $scope.model, 'importAuftrag', $scope.data.date).then(function ({data}) {
                             if (data) $scope.data.nrs = data.nrs;
@@ -203,8 +207,10 @@ const Report = cms.registerSchema({
             }
 
             $scope.exportAuftrag = function () {
+                waiting();
                 cms.execServerFn('Report', $scope.model, 'exportAuftrag', $scope.data.date).then(function () {
-                    confirm('Export successful!');
+                    window.waitingModal.close();
+                    Notification.primary('Speichern erfolgreich');
                 });
             }
 
