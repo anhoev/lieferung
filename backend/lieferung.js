@@ -90,12 +90,6 @@ cms.app.get('/api/customerId', function*(req, res) {
     res.send({maxId: result[0].maxID + 1});
 })
 
-cms.app.use('/', function (req, res, next) {
-    // if (req.headers.host === 'localhost:8888') return res.status(404).send();
-    next();
-    //debugger
-})
-
 const Food = cms.registerSchema({
     name: {type: String},
     Id: String,

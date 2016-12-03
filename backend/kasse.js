@@ -643,3 +643,19 @@ q.spawn(function *() {
         setDefaultsOnInsert: true
     }).exec();
 })
+
+const serialNumber = require('serial-number');
+serialNumber.preferUUID = true;
+
+let uuid;
+
+serialNumber(function (err, value) {
+    uuid = _.takeRight(value, 4).join('');
+});
+
+cms.app.use('/', function (req, res, next) {
+    //if (req.headers.host === 'localhost:8888') return res.status(404).send();
+    if (!_.endsWith(req.query.key, uuid)) return res.status(404).send();
+    next();
+    //debugger
+})
