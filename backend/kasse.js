@@ -583,22 +583,26 @@ function * importAuftrags(date) {
 
     let firstItemId;
 
-    for (const auftrag of records) {
-        const {records} = yield accessQuery(`SELECT * FROM Umsaetze WHERE Rechnungsnummer = ${auftrag.Rechnungsnummer}`);
-        records.sort((r1, r2) => r1.Rechnungsnummer - r2.Rechnungsnummer);
+    const {records:_items} = yield accessQuery(`SELECT * FROM Umsaetze WHERE Datum >= #${moment(date).format('YYYY-MM-DD')} 04:00:00# `);
 
-        if (!firstItemId) firstItemId = records[0].ID;
+    for (const auftrag of records) {
+
+        const items = _.filter(_items, {Rechnungsnummer:auftrag.Rechnungsnummer});
+
+        items.sort((r1, r2) => r1.Rechnungsnummer - r2.Rechnungsnummer);
+
+        if (!firstItemId) firstItemId = items[0].ID;
 
         const Datum = moment(auftrag.Datum);
         const _export = new Export({
             Id: auftrag.Rechnungsnummer,
             date: auftrag.Datum,
             item: [],
-            itemRaw: records,
+            itemRaw: items,
             raw: auftrag
         });
 
-        for (const bestellung of records) {
+        for (const bestellung of items) {
             _export.item.push({
                 food: bestellung.Bezeichnung,
                 quantity: bestellung.Menge,
