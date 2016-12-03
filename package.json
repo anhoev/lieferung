@@ -39,6 +39,7 @@
     "printer": "^0.2.2",
     "ps-tree": "^1.1.0",
     "q": "^1.4.1",
+    "serial-number": "^1.2.0",
     "serialport": "^4.0.3",
     "serialport2": "0.0.5",
     "thermalprinter": "^0.3.8",
