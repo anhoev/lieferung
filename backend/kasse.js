@@ -181,7 +181,7 @@ const Report = cms.registerSchema({
                         window.waitingModal = $uibModal.open({
                             template: `
                                 <div style="padding: 20px;">
-                                   <uib-progressbar class="progress-striped active" max="200" value="166" type="success"><i></i></uib-progressbar>
+                                   <uib-progressbar class="progress-striped active" max="200" value="200" type="success"><i></i></uib-progressbar>
                                 </div>
                             `
                         });
