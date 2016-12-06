@@ -9,6 +9,8 @@ cms.data.webtype = cms.Enum.WebType.APPLICATION;
 
 process.chdir(require('path').resolve(__dirname, '../'));
 
+cms.use(require('./user'));
+
 cms.use(require('cmsmon/mobile'));
 require('./lieferung');
 require('./kasse');
@@ -22,6 +24,5 @@ cms.menu = {
 
 cms.server('backend/en', '');
 
-cms.use(require('./user'));
 
 // cms.data.online.wsAddress = 'ws://localhost:8888';
