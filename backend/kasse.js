@@ -257,7 +257,7 @@ const Report = cms.registerSchema({
 
             $scope.reduce = function () {
                 cms.execServerFn('Report', $scope.model, 'reduce', $scope.data.date, $scope.data.nrs.split(' ')).then(function () {
-                    confirm('Reduzieren erfolgreich !');
+                    Notification.primary('Reduzieren erfolgreich !');
                     $scope.refresh();
                 });
             }
