@@ -566,7 +566,7 @@ const Report = cms.registerSchema({
                         break;
                     }
 
-                    if (_export.raw.Zahlart === 'Bewirtung') {
+                    if (_export.raw.Zahlart !== 'Bewirtung') {
                         _export.deleted = true;
                     }
                 }
