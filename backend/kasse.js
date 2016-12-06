@@ -12,6 +12,8 @@ function merge() {
     return _merge(true, ...arguments);
 }
 
+cms.app.use('/shortcut.js', cms.express.static(path.resolve(__dirname, 'shortcut.js')));
+
 const notifier = require('node-notifier');
 
 const {mongoose, utils:{makeSelect, makeMultiSelect, makeTypeSelect, makeStyles, makeCustomSelect}} = cms;
