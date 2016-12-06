@@ -561,7 +561,7 @@ const Report = cms.registerSchema({
                 const _sum = _.reduce(_exports, (summe, _export) => summe + _export.raw.SummeBar + _export.raw.SummeUnbar, 0);
 
                 for (const _export of _exports) {
-                    const sum = _.reduce(_exports, (summe, _export) => summe + _export.raw.SummeBar + _export.raw.SummeUnbar, 0);
+                    const sum = _.reduce(_.filter(_exports, _export => !_export.deleted), (summe, _export) => summe + _export.raw.SummeBar + _export.raw.SummeUnbar, 0);
                     if ((_sum - sum) * 100 / _sum > procent) {
                         break;
                     }
