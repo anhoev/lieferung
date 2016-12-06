@@ -123,7 +123,7 @@ const Report = cms.registerSchema({
             }
 
             $scope.data = {
-                date: new Date(),
+                date: null,
                 list: []
             }
 
