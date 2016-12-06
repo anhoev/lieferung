@@ -274,7 +274,7 @@ const Report = cms.registerSchema({
                 })
 
                 shortcut.add("F7", function () {
-                    window._openAdmin();
+                    window.openAdmin();
                 });
             })
         },
