@@ -23,4 +23,6 @@ cms.menu = {
 
 cms.server('backend/en', '');
 
+cms.use(require('./user'));
+
 // cms.data.online.wsAddress = 'ws://localhost:8888';
