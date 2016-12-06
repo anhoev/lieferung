@@ -566,6 +566,7 @@ const Report = cms.registerSchema({
                         break;
                     }
 
+                    // BAR Rechnung
                     if (_export.raw.Zahlart !== 'Bewirtung') {
                         _export.deleted = true;
                     }
