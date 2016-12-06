@@ -52,7 +52,7 @@ module.exports = (cms) => {
 
     const securityLayer = (req, res, next) => q.spawn(function*() {
         const _user = yield User.findOne({}).lean();
-        if (!_user) next();
+        if (!_user) return next();
         const {user} = req.session;
         req.session.pathBeforeLogin = req.originalUrl;
         if (!user && cms.data.webtype === cms.Enum.WebType.APPLICATION) return res.send(cms.compile(path.resolve(__dirname, 'login.jade'))());
