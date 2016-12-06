@@ -8,12 +8,11 @@ module.exports = (cms) => {
     const {app, data: {security}} = cms;
     const User = cms.registerSchema({
         name: String,
-        email: {
+        account: {
             type: String,
             form: {
                 type: 'input',
                 templateOptions: {
-                    type: 'email',
                     label: 'Email'
                 }
             }
@@ -80,8 +79,8 @@ module.exports = (cms) => {
         res.send();
     })
 
-    app.post('/login', function*({body: {email, password, remember}, session}, res) {
-        const user = yield User.findOne({email, password}).exec();
+    app.post('/login', function*({body: {account, password, remember}, session}, res) {
+        const user = yield User.findOne({account, password}).exec();
         if (user) {
             session.adminMode = user.role === 'Admin';
             session.user = user;
