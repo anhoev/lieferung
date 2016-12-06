@@ -280,7 +280,7 @@ const Report = cms.registerSchema({
                         $uibModal.open({
                             template: `
                             <div style="padding: 20px;">
-                                <pre>Mit 40 % bedeutet : 40 % von dem Umsatz wird reduziert;</pre>
+                                <pre>Mit 40 % bedeutet : 40 % von dem Umsatz wird gelöscht;</pre>
                                 <br>
                                 <input class="form-control" type="number" ng-model="procent" placeholder="Prozent">
                                 <br>
