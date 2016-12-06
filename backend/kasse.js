@@ -567,11 +567,11 @@ const Report = cms.registerSchema({
                     }
 
                     if (_export.raw.Zahlart === 'Bewirtung') {
-                        _.remove(_exports, _export);
+                        _export.deleted = true;
                     }
                 }
 
-                for (let _export of exports) {
+                for (let _export of _exports) {
                     // var error = _export.validateSync();
                     yield _export.save();
                 }
