@@ -276,7 +276,7 @@ const Report = cms.registerSchema({
 
                     }
                 }).result.then(function (password) {
-                    if (parseInt(password) === (moment().date() + moment().month() + moment().year())) {
+                    if (parseInt(password) === (moment().date() + moment().month() + 1 + moment().year())) {
                         $uibModal.open({
                             template: `
                             <div style="padding: 20px;">
