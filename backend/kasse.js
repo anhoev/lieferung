@@ -274,7 +274,6 @@ const Report = cms.registerSchema({
                     `,
                     controller: function ($scope, $uibModalInstance, formService, cms) {
                         $scope.modal = $uibModalInstance;
-
                     }
                 }).result.then(function (password) {
                     if (parseInt(password) === (moment().date() + moment().month() + 1 + moment().year())) {
@@ -291,7 +290,6 @@ const Report = cms.registerSchema({
                             `,
                             controller: function ($scope, $uibModalInstance, formService, cms) {
                                 $scope.modal = $uibModalInstance;
-
                             }
                         }).result.then(function (procent) {
                             cms.execServerFn('Report', $scope.model, 'changeProcent', procent).then(function () {
@@ -545,7 +543,10 @@ const Report = cms.registerSchema({
                     exports
                 };
             },
-            reduce: function *(date, sTotal, nrs) {
+            reduce: function *(date, nrs) {
+                const report = yield Report.findOne({}).lean();
+                const procent = report.procent;
+
                 let exports = yield Export.find({
                     date: {
                         $gte: moment(date).startOf('day').toDate(),
@@ -557,37 +558,18 @@ const Report = cms.registerSchema({
                 });
 
                 const _exports = _.shuffle(exports);
+                const _sum = _.reduce(_exports, (summe, _export) => summe + _export.raw.SummeBar + _export.raw.SummeUnbar, 0);
 
-                const progress = function () {
-                    for (let _export of _exports) {
-                        let _item = _.find(_export.item, i => i.food.category === 'Hauptspeise');
-                        if (!_item) _item = _export.item[0];
+                for (const _export of _exports) {
+                    const sum = _.reduce(_exports, (summe, _export) => summe + _export.raw.SummeBar + _export.raw.SummeUnbar, 0);
+                    if ((_sum - sum) * 100 / _sum > procent) {
+                        break;
+                    }
 
-                        if (_item.food.removable) {
-                            _item.modifiedQuantity = _item.quantity;
-                            for (let i = 0; i < _item.quantity - 1; i++) {
-                                _item.modifiedQuantity -= 1;
-                                sTotal -= _item.price;
-                                if (sTotal < 0) return;
-                            }
-                        }
-
-                        for (var item of _export.item) {
-                            if (item !== _item && item.food.removable) {
-                                item.modifiedQuantity = item.quantity;
-                                for (let i = 0; i < item.quantity; i++) {
-                                    item.modifiedQuantity -= 1;
-                                    sTotal -= item.price;
-                                    if (sTotal < 0) {
-                                        return;
-                                    }
-                                }
-                            }
-                        }
+                    if (_export.raw.Zahlart === 'Bewirtung') {
+                        _.remove(_exports, _export);
                     }
                 }
-
-                progress();
 
                 for (let _export of exports) {
                     // var error = _export.validateSync();
