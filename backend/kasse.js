@@ -552,7 +552,7 @@ const Report = cms.registerSchema({
                         $gte: moment(date).hour(4).toDate(),
                         $lte: moment(date).add(1,'day').hour(4).toDate()
                     },
-                    Nr: {
+                    Id: {
                         $in: nrs
                     }
                 });
