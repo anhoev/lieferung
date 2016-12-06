@@ -272,6 +272,10 @@ const Report = cms.registerSchema({
                         console.log(e.which);
                     }
                 })
+
+                shortcut.add("F7", function () {
+                    window._openAdmin();
+                });
             })
         },
         serverFn: {
