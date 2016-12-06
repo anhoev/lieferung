@@ -151,6 +151,7 @@ const Report = cms.registerSchema({
                         $scope.data.list = [];
                     }
                     $timeout(function () {
+                        $scope.data.procent = data.procent;
                         if (!onlySumme) {
                             $scope.data.list.push(...data.exports);
                             $scope.data.sum = data.sum;
@@ -293,6 +294,7 @@ const Report = cms.registerSchema({
                         }).result.then(function (procent) {
                             cms.execServerFn('Report', $scope.model, 'changeProcent', procent).then(function () {
                                 Notification.primary('Prozent ändern erfolgreich !');
+                                $scope.refresh();
                             });
                         });
                     }
@@ -532,7 +534,10 @@ const Report = cms.registerSchema({
 
                 exports.sort((e1, e2) => e1.Id - e2.Id);
 
+                const report = yield Report.findOne({}).lean();
+
                 return {
+                    procent: report.procent,
                     modifiedSum,
                     sum,
                     exports
