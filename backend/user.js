@@ -44,7 +44,7 @@ module.exports = (cms) => {
         }
     }, {
         name: 'User',
-        formatterUrl: path.resolve(__dirname, 'user.jade'),
+        formatter: '<h2></h2>',
         title: 'name',
         isViewElement: false
     });
