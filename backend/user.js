@@ -55,7 +55,7 @@ module.exports = (cms) => {
         const _user = yield User.findOne({}).lean();
         if (!_user) next();
         const {user} = req.session;
-        req.session.pathBeforeLogin = req.headers.referer;
+        req.session.pathBeforeLogin = req.originalUrl;
         if (!user && cms.data.webtype === cms.Enum.WebType.APPLICATION) return res.send(cms.compile(path.resolve(__dirname, 'login.jade'))());
         next();
     });
