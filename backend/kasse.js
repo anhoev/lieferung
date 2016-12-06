@@ -549,8 +549,8 @@ const Report = cms.registerSchema({
 
                 let exports = yield Export.find({
                     date: {
-                        $gte: moment(date).startOf('day').toDate(),
-                        $lte: moment(date).endOf('day').toDate()
+                        $gte: moment(date).hour(4).toDate(),
+                        $lte: moment(date).add(1,'day').hour(4).toDate()
                     },
                     Nr: {
                         $in: nrs
