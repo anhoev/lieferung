@@ -12,7 +12,6 @@ process.chdir(require('path').resolve(__dirname, '../'));
 cms.use(require('cmsmon/mobile'));
 require('./lieferung');
 require('./kasse');
-require('./key');
 
 // cms.data.online.autoOpenAdmin = true;
 
