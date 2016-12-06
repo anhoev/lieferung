@@ -13,7 +13,7 @@ module.exports = (cms) => {
             form: {
                 type: 'input',
                 templateOptions: {
-                    label: 'Email'
+                    label: 'Account'
                 }
             }
         },
