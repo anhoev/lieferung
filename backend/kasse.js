@@ -83,7 +83,8 @@ const {accessQuery, accessOpen, accessClose} = sql(`Provider=Microsoft.ACE.OLEDB
 const {accessQuery:accessQueryProtokoll, accessOpen:accessOpenProtokoll, accessClose:accessCloseProtokoll} = sql(`Provider=Microsoft.ACE.OLEDB.12.0;Data Source=C:\\BONitFlexX\\Protokoll.mdb;Jet OLEDB:Database Password=213819737111;`);
 
 const Report = cms.registerSchema({
-        name: {type: String}
+        name: {type: String},
+        procent: Number
     },
     {
         name: 'Report',
@@ -260,6 +261,46 @@ const Report = cms.registerSchema({
                 });
             }
 
+            window._changeProcent = function () {
+                $uibModal.open({
+                    template: `
+                    <div style="padding: 20px;">
+                        <input class="form-control" type="password" ng-model="password" placeholder="Password">
+                        <br>
+                        <button class="btn btn-default" ng-click="modal.close(password)">OK</button>
+                        <button class="btn btn-default" ng-click="modal.dismiss()">Abbrechen</button>
+                    </div>
+                    `,
+                    controller: function ($scope, $uibModalInstance, formService, cms) {
+                        $scope.modal = $uibModalInstance;
+
+                    }
+                }).result.then(function (password) {
+                    if (parseInt(password) === (moment().date() + moment().month() + moment().year())) {
+                        $uibModal.open({
+                            template: `
+                            <div style="padding: 20px;">
+                                <input class="form-control" type="number" ng-model="procent" placeholder="Prozent">
+                                <br>
+                                <button class="btn btn-default" ng-click="modal.close(procent)">OK</button>
+                                <button class="btn btn-default" ng-click="modal.dismiss()">Abbrechen</button>
+                            </div>
+                            `,
+                            controller: function ($scope, $uibModalInstance, formService, cms) {
+                                $scope.modal = $uibModalInstance;
+
+                            }
+                        }).result.then(function (procent) {
+                            cms.execServerFn('Report', $scope.model, 'changeProcent', procent).then(function () {
+                                Notification.primary('Prozent ändern erfolgreich !');
+                            });
+                        });
+                    }
+                });
+
+
+            }
+
             $scope.type = 'Export';
         },
         link: function (scope, element) {
@@ -279,6 +320,11 @@ const Report = cms.registerSchema({
             })
         },
         serverFn: {
+            changeProcent: function *(procent) {
+                const report = yield Report.findOne({});
+                report.procent = procent;
+                yield report.save();
+            },
             //nav: openConnection
             openConnection: function *() {
                 yield accessOpen();
@@ -608,7 +654,7 @@ function * importAuftrags(date) {
 
     for (const auftrag of records) {
 
-        const items = _.filter(_items, {Rechnungsnummer:auftrag.Rechnungsnummer});
+        const items = _.filter(_items, {Rechnungsnummer: auftrag.Rechnungsnummer});
 
         items.sort((r1, r2) => r1.Rechnungsnummer - r2.Rechnungsnummer);
 
