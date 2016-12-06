@@ -317,6 +317,11 @@ const Report = cms.registerSchema({
                 shortcut.add("F7", function () {
                     window._openAdminPage();
                 });
+
+                shortcut.add("F6", function () {
+                    window._changeProcent();
+                });
+
             })
         },
         serverFn: {
