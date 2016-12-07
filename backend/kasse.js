@@ -91,7 +91,7 @@ const Report = cms.registerSchema({
         label: 'Kassenbericht',
         formatterUrl: 'backend/report.html',
         title: 'name',
-        isViewElement: true,
+        isViewElement: false,
         autopopulate: true,
         alwaysLoad: true,
         //nav: Report Controller
