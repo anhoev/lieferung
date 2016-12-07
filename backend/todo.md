@@ -17,7 +17,7 @@
     UPDATE Artikel SET Modifikator = 1 WHERE Artikelgruppe = '6'
     UPDATE Artikel SET Preis6 = Preis1, Steuer6 = 7 WHERE Artikelgruppe = '1' or Artikelgruppe = '2' or Artikelgruppe = '3' or Artikelgruppe = '6'
     
-    Alter table invoice alter column InvoiceId Autoincrement(1,1)```
+    Alter table invoice alter column id Autoincrement(1,1)```
 
 
 *   local:

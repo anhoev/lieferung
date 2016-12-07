@@ -637,7 +637,7 @@ function * _importFoods(records) {
 function * importAuftrags(date) {
     yield Export.find({}).remove().exec();
 
-    let {records} = yield accessQuery(`SELECT * FROM Rechnungen WHERE Datum >= #${moment(date).format('YYYY-MM-DD')} 04:00:00# `);
+    let {records} = yield accessQuery(`SELECT * FROM Rechnungen WHERE Datum >= #${moment(date).format('YYYY-MM-DD')} 04:00:00# AND TagabNr = 0`);
 
     if (!records || records.length === 0) return;
 
