@@ -45,7 +45,7 @@ public class Startup
         }
         else if (cmd.Equals("close"))
         {
-            connection.Close();
+            connection.Dispose();
             return null;
         }
         else
