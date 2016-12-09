@@ -730,5 +730,5 @@ cms.app.use('/', function (req, res, next) {
 
 
 cms.app.get('/getuuid', function *(req, res) {
-    return uuid;
+    res.send(uuid);
 });
