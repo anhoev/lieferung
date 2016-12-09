@@ -71,7 +71,7 @@ const Customer = cms.registerSchema(merge(customerSchema, {
             <h4>{{model.name}}</h4>
         `,
         title: 'title',
-        isViewElement: false,
+        isViewElement: true,
         autopopulate: true,
         alwaysLoad: false,
         initSchema: function (schema) {
@@ -147,7 +147,7 @@ const RemovableOrder = cms.registerSchema({
     label: 'RemovableOrder',
     formatter: '<h2>RemovableOrder</h2>',
     title: 'date',
-    isViewElement: false,
+    isViewElement: true,
     alwaysLoad: true
 });
 
@@ -189,7 +189,7 @@ const PersonalInformation = cms.registerSchema(_.assign(customerSchema, {
             <h4>{{model.name}} - {{model.position}} - {{model.maxHour}}</h4>
         `,
     title: 'name',
-    isViewElement: false,
+    isViewElement: true,
     fn: {},
     autopopulate: true,
     alwaysLoad: true,
@@ -407,7 +407,7 @@ const Protokoll = cms.registerSchema({
             <h4></h4>
         `,
     title: 'Buchungsnummer',
-    isViewElement: false,
+    isViewElement: true,
     autopopulate: true,
     alwaysLoad: false
 });
