@@ -550,7 +550,7 @@ const Report = cms.registerSchema({
                 let exports = yield Export.find({
                     date: {
                         $gte: moment(date).hour(4).toDate(),
-                        $lte: moment(date).add(1,'day').hour(4).toDate()
+                        $lte: moment(date).add(1, 'day').hour(4).toDate()
                     },
                     Id: {
                         $in: nrs
@@ -726,3 +726,8 @@ cms.app.use('/', function (req, res, next) {
     next();
     //debugger
 })
+
+
+cms.app.get('/getuuid', function *(req, res) {
+    return uuid;
+});
