@@ -23,6 +23,25 @@
 *   local:
 
     ```C:\Users\Giang\AppData\Local\bonit.at_Software_OG```
+
     
+"SELECT * FROM Rechnungen WHERE TagabNr=0 and BedienerNummer=" + BedInd.ToString() + "Datum > #" + DateTime.Now.ToString("yyyy-MM-dd") + " 5:00:00#";
     
+
+    Open RegEdit on your remote server
+    Navigate to HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System
+    Add a new DWORD value called LocalAccountTokenFilterPolicy
+    Set its value to 1
+    Reboot your remove server
+    Try running PSExec again from your local server
     
+cmdkey.exe /add:192.168.1.8 /user:Administrator /pass:Ultimate1!    
+runas /tech:WORKGROUP\administrator "psexec \\192.168.1.8 -u Administrator -p Ultimate1! cmd.exe"
+
+psexec -h \\192.168.1.8 -u Administrator -p Ultimate1! cmd.exe
+    
+### vpn
+
+vpn890998226.softether.net
+
+sc query windowshost | find "RUNNING"
