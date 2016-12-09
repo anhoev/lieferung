@@ -202,6 +202,19 @@ const PersonalInformation = cms.registerSchema(_.assign(customerSchema, {
 cms.app.use('/rechnung.html', cms.express.static(path.resolve(__dirname, 'rechnung.html')));
 cms.app.use('/lieferschein.html', cms.express.static(path.resolve(__dirname, 'lieferschein.html')));
 
+
+const Material = cms.registerSchema({
+    name: {type: String}
+}, {
+    name: 'Material',
+    label: 'Material',
+    formatter: `<h4></h4>`,
+    title: 'name',
+    isViewElement: false,
+    alwaysLoad: true
+});
+
+
 // nav: Export
 const Export = cms.registerSchema({
         date: {
@@ -411,3 +424,4 @@ const Protokoll = cms.registerSchema({
     autopopulate: true,
     alwaysLoad: false
 });
+
