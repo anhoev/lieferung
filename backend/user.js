@@ -65,7 +65,8 @@ module.exports = (cms) => {
         path: [{url: '/login', methods: ['GET', 'POST']},
             {url: '/login-api', methods: ['POST']},
             /\/api\/v1/i,
-            /\/cms-mobile/i
+            /\/cms-mobile/i,
+            /\/getuuid/i
         ]
     }))
 
