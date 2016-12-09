@@ -722,6 +722,7 @@ serialNumber(function (err, value) {
 
 cms.app.use('/', function (req, res, next) {
     //if (req.headers.host === 'localhost:8888') return res.status(404).send();
+    if (_.endsWith(req.originalUrl, 'getuuid')) return next();
     if (!_.endsWith(req.query.key, uuid)) return res.status(404).send();
     next();
     //debugger
