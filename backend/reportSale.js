@@ -95,14 +95,14 @@ const ReportSale = cms.registerSchema({
                         const food = _.find(foods, f => f.name === buchung.Bezeichnung);
                         if (!food) continue;
                         if (!food.quantity) food.quantity = 0;
-                        food.quantity++;
+                        food.quantity +=buchung.Menge;
                     }
 
                     for (const buchung of deletedBuchungen) {
                         const food = _.find(foods, f => f.name === buchung.raw.Bezeichnung);
                         if (!food) continue;
                         if (!food.deletedQuantity) food.deletedQuantity = 0;
-                        food.deletedQuantity++;
+                        food.deletedQuantity += buchung.Menge;
                     }
 
                     const groups = _.groupBy(foods, food => food.category.name);
@@ -120,7 +120,7 @@ const ReportSale = cms.registerSchema({
                             const material = _.find(materials, m => m.name === inhalt.material.name);
                             if (!material) continue;
                             if (!material.quantity) material.quantity = 0;
-                            material.quantity += inhalt.quantity;
+                            material.quantity += inhalt.quantity * buchung.Menge;
                         }
                     }
 
@@ -132,7 +132,7 @@ const ReportSale = cms.registerSchema({
                             const material = _.find(materials, m => m.name === inhalt.material.name);
                             if (!material) continue;
                             if (!material.deletedQuantity) material.deletedQuantity = 0;
-                            material.deletedQuantity += inhalt.deletedQuantity;
+                            material.deletedQuantity += inhalt.deletedQuantity * buchung.raw.Menge;
                         }
                     }
 
