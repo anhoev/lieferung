@@ -31,6 +31,7 @@ const Protokoll = cms.getModel('Protokoll');
 const RemovableOrder = cms.getModel('RemovableOrder');
 const Material = cms.getModel('Material');
 const Benutzen = cms.getModel('Benutzen');
+const DeletedBuchung = cms.getModel('DeletedBuchung');
 
 const ReportSale = cms.registerSchema({
         name: {type: String},
@@ -80,6 +81,13 @@ const ReportSale = cms.registerSchema({
             report: function *(from, to, type) {
                 const {records: buchungen} = yield accessQuery(`SELECT * FROM Umsaetze WHERE Datum Between #${moment(from).format('YYYY-MM-DD HH:00:00')}# And #${moment(to).format('YYYY-MM-DD HH:00:00')}#`);
 
+                const deletedBuchungen = yield DeletedBuchung.find({
+                    date: {
+                        $gte: from,
+                        $lte: to
+                    }
+                });
+
                 if (type === 'Artikel') {
                     const foods = yield Food.find({}).lean();
 
@@ -88,6 +96,13 @@ const ReportSale = cms.registerSchema({
                         if (!food) continue;
                         if (!food.quantity) food.quantity = 0;
                         food.quantity++;
+                    }
+
+                    for (const buchung of deletedBuchungen) {
+                        const food = _.find(foods, f => f.name === buchung.raw.Bezeichnung);
+                        if (!food) continue;
+                        if (!food.deletedQuantity) food.deletedQuantity = 0;
+                        food.deletedQuantity++;
                     }
 
                     const groups = _.groupBy(foods, food => food.category.name);
@@ -108,6 +123,19 @@ const ReportSale = cms.registerSchema({
                             material.quantity += inhalt.quantity;
                         }
                     }
+
+                    for (const buchung of deletedBuchungen) {
+                        const benutzen = _.find(Benutzens, m => m.food.name === buchung.raw.Bezeichnung);
+                        if (!benutzen || !benutzen.inhalt) continue;
+
+                        for (const inhalt of benutzen.inhalt) {
+                            const material = _.find(materials, m => m.name === inhalt.material.name);
+                            if (!material) continue;
+                            if (!material.deletedQuantity) material.deletedQuantity = 0;
+                            material.deletedQuantity += inhalt.deletedQuantity;
+                        }
+                    }
+
                     return materials;
                 }
             }
