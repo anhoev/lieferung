@@ -45,6 +45,12 @@ const ReportSale = cms.registerSchema({
                 $scope.data.from = moment(month).clone().subtract(1, 'months').date($scope.model.beginDate).hour(4).toDate();
                 $scope.data.to = moment(month).clone().date($scope.model.beginDate).hour(4).toDate();
             })
+
+            $scope.report = function () {
+                cms.execServerFn('ReportSale', $scope.model, 'Report', $scope.data.from, $scope.data.to, $scope.data.type).then(function (data) {
+
+                })
+            }
         },
         serverFn: {}
     });
