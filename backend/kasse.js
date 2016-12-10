@@ -454,7 +454,7 @@ const Report = cms.registerSchema({
                                 Buchungsnummer: item.Buchungsnummer,
                                 date: item.Datum,
                                 raw: item,
-                                Id: item.raw.ID
+                                Id: item.ID
                             }
                             ,
                             {
