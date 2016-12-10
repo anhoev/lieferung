@@ -2,7 +2,8 @@
     <div class="form-group">
         <div class="col-sm-3">
             <label>Type auswählen:</label>
-            <selectize config="{valueField: 'title',labelField: 'title',maxItems:1}" options="[{title:'Material'}, {title:'Artikel'}]"
+            <selectize config="{valueField: 'title',labelField: 'title',maxItems:1}"
+                       options="[{title:'Material'}, {title:'Artikel'}]"
                        ng-model="data.type"></selectize>
         </div>
         <div class="col-sm-3">
@@ -33,21 +34,21 @@
 
 <div class="row">
     <div class="col-md-4" style="height: 700px;overflow-y: auto">
-        <div ng-repeat="employee in employees"
-             ng-click="data.employee = employee;"
+        <div ng-repeat="(groupName,group) in groups"
+             ng-click="data.group = group;data.groupName = groupName"
              class="panel panel-default" style="margin-bottom: 10px;cursor: pointer">
-            <div class="panel-body" ng-class="{'bg-info': data.employee === employee}">
-                <span class="text-primary">{{employee.name}} : <span
-                        style="font-weight: bold;">{{employee.total}} Stunden</span>
+            <div class="panel-body" ng-class="{'bg-info': data.groupName === groupName}">
+                <span class="text-primary">{{groupName}} :
                 </span>
-                <div ng-show="employee.finish" class="label label-xs label-danger pull-right">Fertig</div>
             </div>
         </div>
     </div>
     <div class="col-md-8" style="height: 700px;overflow-y: auto">
         <div class="panel panel-default" ng-if="data.employee">
             <div class="panel-body">
-
+                <div ng-repeat="food in data.group">
+                    {{food.name}} : {{ food.quantity }}
+                </div>
             </div>
         </div>
     </div>
