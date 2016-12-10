@@ -60,10 +60,17 @@ const ReportSale = cms.registerSchema({
         },
         serverFn: {
             report: function *(from, to, type) {
+                const foods = yield Food.find({}).lean();
+
+                const groups = _.groupBy(foods, food => food.category.name);
+
                 const {records: buchungen} = yield accessQuery(`SELECT * FROM Umsaetze WHERE Datum Between #${moment(from).format('YYYY-MM-DD HH:00:00')}# And #${moment(to).format('YYYY-MM-DD HH:00:00')}#`);
+
                 for (const buchung of buchungen) {
-                    
+                    const food = _.find(foods, f => f.name === buchung.Bezeichnung);
+                    food.quantity ++;
                 }
+                
                 debugger
             }
         }
