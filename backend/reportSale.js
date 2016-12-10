@@ -69,8 +69,8 @@ const ReportSale = cms.registerSchema({
                 waiting();
                 cms.execServerFn('ReportSale', $scope.model, 'report', $scope.data.from, $scope.data.to, $scope.data.type).then(function ({data}) {
                     window._waitingModal.close();
-                    if (data.type === 'Artikel') $scope.groups = data;
-                    if (data.type === 'Material') $scope.materials = data;
+                    if ($scope.data.type === 'Artikel') $scope.groups = data;
+                    if ($scope.data.type === 'Material') $scope.materials = data;
                 })
             }
         },
