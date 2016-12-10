@@ -91,11 +91,7 @@ const Benutzen = cms.registerSchema({
     title: 'food',
     isViewElement: false,
     autopopulate: true,
-    alwaysLoad: true,
-    tabs: [
-        {title: 'basic'},
-        {title: 'detail', fields: ['parent']}
-    ]
+    alwaysLoad: true
 });
 
 
