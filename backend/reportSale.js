@@ -32,7 +32,7 @@ const ReportSale = cms.registerSchema({
         label: 'VerkaufBericht',
         formatterUrl: 'backend/report-sale.html',
         title: 'name',
-        isViewElement: true,
+        isViewElement: false,
         autopopulate: true,
         alwaysLoad: true,
         controller: function (cms, $scope, $timeout, Notification, $uibModal) {
