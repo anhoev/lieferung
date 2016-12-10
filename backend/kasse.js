@@ -603,7 +603,8 @@ function * _importFoods(records) {
     for (const record of records) {
         const food = new Food({
             Id: record.Artikelnummer,
-            name: record.Artikelbezeichnung
+            name: record.Artikelbezeichnung,
+            price: record.Preis1
         });
 
         const save = function *() {
