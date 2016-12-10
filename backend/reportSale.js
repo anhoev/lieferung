@@ -45,7 +45,7 @@ const ReportSale = cms.registerSchema({
     });
 
 q.spawn(function *() {
-    yield Report.findOneAndUpdate({}, {name: 'VerkaufBericht'}, {
+    yield ReportSale.findOneAndUpdate({}, {name: 'VerkaufBericht'}, {
         upsert: true,
         setDefaultsOnInsert: true
     }).exec();
