@@ -595,10 +595,7 @@ var iconv = new Iconv('UTF-8', 'ISO-8859-1');
 function * importFoods() {
     //yield Food.find({}).remove().exec();
     const {records} = yield accessQueryArtikel('SELECT * FROM Artikel');
-    yield * _importFoods(records);
-}
 
-function * _importFoods(records) {
     for (const record of records) {
         const food = new Food({
             Id: record.Artikelnummer,
@@ -606,10 +603,15 @@ function * _importFoods(records) {
             price: record.Preis1
         });
 
-        yield Food.findOneAndUpdate({Id: food.Id}, food, {
-            upsert: true,
-            setDefaultsOnInsert: true
-        }).exec();
+
+        try {
+            yield Food.findOneAndUpdate({Id: food.Id}, food, {
+                upsert: true,
+                setDefaultsOnInsert: true
+            }).exec();
+        } catch (e) {
+            debugger;
+        }
     }
 
 }
