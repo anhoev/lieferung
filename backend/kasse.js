@@ -84,6 +84,12 @@ const {accessQuery, accessOpen, accessClose} = sql(`Provider=Microsoft.ACE.OLEDB
 const {accessQuery:accessQueryProtokoll, accessOpen:accessOpenProtokoll, accessClose:accessCloseProtokoll} = sql(`Provider=Microsoft.ACE.OLEDB.12.0;Data Source=C:\\BONitFlexX\\Protokoll.mdb;Jet OLEDB:Database Password=213819737111;`);
 const {accessQuery:accessQueryArtikel, accessOpen:accessOpenArtikel, accessClose:accessCloseArtikel} = sql(`Provider=Microsoft.ACE.OLEDB.12.0;Data Source=C:\\BONitFlexX\\Artikel.mdb;Jet OLEDB:Database Password=213819737111;`);
 
+cms.utils.access = {
+    accessQuery, accessOpen, accessClose,
+    accessQueryProtokoll, accessOpenProtokoll,accessCloseProtokoll,
+    accessQueryArtikel, accessOpenArtikel, accessCloseArtikel
+}
+
 const Report = cms.registerSchema({
         name: {type: String},
         procent: Number

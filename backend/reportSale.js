@@ -18,6 +18,12 @@ const notifier = require('node-notifier');
 
 const {mongoose, utils:{makeSelect, makeMultiSelect, makeTypeSelect, makeStyles, makeCustomSelect}} = cms;
 
+const {
+    accessQuery, accessOpen, accessClose,
+    accessQueryProtokoll, accessOpenProtokoll, accessCloseProtokoll,
+    accessQueryArtikel, accessOpenArtikel, accessCloseArtikel
+} = cms.utils.access;
+
 const Category = cms.getModel('Category');
 const Food = cms.getModel('Food');
 const Export = cms.getModel('Export');
@@ -54,6 +60,10 @@ const ReportSale = cms.registerSchema({
         },
         serverFn: {
             report: function *(from, to, type) {
+                const {records: buchungen} = yield accessQuery(`SELECT * FROM Umsaetze WHERE Datum Between #${moment(from).format('YYYY-MM-DD HH:00:00')}# And #${moment(to).format('YYYY-MM-DD HH:00:00')}#`);
+                for (const buchung of buchungen) {
+                    
+                }
                 debugger
             }
         }
