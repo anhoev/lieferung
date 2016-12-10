@@ -68,7 +68,7 @@ const ReportSale = cms.registerSchema({
                 cms.execServerFn('ReportSale', $scope.model, 'report', $scope.data.from, $scope.data.to, $scope.data.type).then(function ({data}) {
                     window._waitingModal.close();
                     debugger
-                    $scope.groups = JsonFn.parse(data, true);
+                    $scope.groups = data;
                 })
             }
         },
