@@ -93,7 +93,7 @@ const Benutzen = cms.registerSchema({
     info: {
         elementClass: 'col-sm-4',
         editorIcon: {
-            top: '49px',
+            top: '17px',
             right: '-14px'
         }
     }
