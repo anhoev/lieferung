@@ -2,7 +2,7 @@
     <div class="form-group">
         <div class="col-sm-3">
             <label>Type auswählen:</label>
-            <selectize config="{}" options="[{id:0, title:'Material'}, {id:1, title:'Artikel'}]"
+            <selectize config="{valueField: 'id',labelField: 'title',maxItems:1}" options="[{id:0, title:'Material'}, {id:1, title:'Artikel'}]"
                        ng-model="data.type"></selectize>
         </div>
         <div class="col-sm-3">
