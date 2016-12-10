@@ -43,6 +43,16 @@ const ReportSale = cms.registerSchema({
         autopopulate: true,
         alwaysLoad: true,
         controller: function (cms, $scope, $timeout, Notification, $uibModal) {
+            const waiting = function () {
+                window._waitingModal = $uibModal.open({
+                    template: `
+                                <div style="padding: 20px;">
+                                   <uib-progressbar class="progress-striped active" max="200" value="200" type="success"><i></i></uib-progressbar>
+                                </div>
+                            `
+                });
+            }
+
             $scope.data = {
                 type: 'Artikel',
                 month: new Date()
@@ -54,8 +64,11 @@ const ReportSale = cms.registerSchema({
             })
 
             $scope.report = function () {
+                waiting();
                 cms.execServerFn('ReportSale', $scope.model, 'report', $scope.data.from, $scope.data.to, $scope.data.type).then(function (data) {
-
+                    window._waitingModal.close();
+                    const groups = JsonFn.parse(data, true);
+                    debugger
                 })
             }
         },
@@ -70,7 +83,7 @@ const ReportSale = cms.registerSchema({
                         const food = _.find(foods, f => f.name === buchung.Bezeichnung);
                         if (!food) continue;
                         if (!food.quantity) food.quantity = 0;
-                        food.quantity ++;
+                        food.quantity++;
                     }
 
                     const groups = _.groupBy(foods, food => food.category.name);
