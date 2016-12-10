@@ -1,8 +1,9 @@
 <form ng-submit="report()" novalidate class="form-horizontal">
     <div class="form-group">
         <div class="col-sm-3">
-            <label>Firma auswählen:</label>
-            <selectize config="{}" options="['Material','Artikel']" ng-model="data.type"></selectize>
+            <label>Type auswählen:</label>
+            <selectize config="{}" options="[{id:0, title:'Material'}, {id:1, title:'Artikel'}]"
+                       ng-model="data.type"></selectize>
         </div>
         <div class="col-sm-3">
             <label>From:</label>
