@@ -49,6 +49,7 @@
                 <br>
                 <div ng-repeat="food in data.group" ng-if="food.quantity > 0">
                     <p class="bg-success" style="font-size: larger">{{ food.quantity }} X {{food.name}}</p>
+                    <p class="bg-danger" style="font-size: larger">{{ food.deletedQuantity }} X {{food.name}}</p>
                     <br>
                 </div>
             </div>
@@ -60,7 +61,8 @@
     <h4 class="text-primary">Material:   </h4>
     <br>
     <div ng-repeat="material in materials" ng-if="material.quantity > 0">
-        <p class="text-success" style="font-size: larger">{{ material.quantity }} {{ material.name }}</p>
+        <p class="text-success" style="font-size: larger">{{ material.quantity | number : 2 }} {{ material.name }}</p>
+        <p class="text-danger" style="font-size: larger">{{ material.deletedQuantity | number : 2 }} {{ material.name }}</p>
         <br>
     </div>
 </div>
