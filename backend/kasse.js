@@ -607,16 +607,12 @@ function * _importFoods(records) {
             price: record.Preis1
         });
 
-        const save = function *() {
-            console.time('mongo-save');
-            yield Food.findOneAndUpdate({Id: food.Id}, food, {
-                upsert: true,
-                setDefaultsOnInsert: true
-            }).exec();
-            console.timeEnd('mongo-save');
-        }
+        const test = yield Food.findOne({Id: food.Id});
 
-        yield * save();
+        yield Food.findOneAndUpdate({Id: food.Id}, food, {
+            upsert: true,
+            setDefaultsOnInsert: true
+        }).exec();
     }
 
 }
