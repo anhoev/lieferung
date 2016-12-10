@@ -212,7 +212,7 @@ const DeletedBuchung = cms.registerSchema({
     name: 'DeletedBuchung',
     formatter: `<h4>{{model.name}}</h4>`,
     title: 'name',
-    isViewElement: true
+    isViewElement: false
 });
 
 const Protokoll = cms.registerSchema({
