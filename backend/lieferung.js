@@ -89,7 +89,14 @@ const Benutzen = cms.registerSchema({
     title: 'food',
     isViewElement: false,
     autopopulate: true,
-    alwaysLoad: true
+    alwaysLoad: true,
+    info: {
+        elementClass: 'col-sm-4',
+        editorIcon: {
+            top: '49px',
+            right: '-14px'
+        }
+    }
 });
 
 
