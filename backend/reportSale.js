@@ -132,7 +132,7 @@ const ReportSale = cms.registerSchema({
                             const material = _.find(materials, m => m.name === inhalt.material.name);
                             if (!material) continue;
                             if (!material.deletedQuantity) material.deletedQuantity = 0;
-                            material.deletedQuantity += inhalt.deletedQuantity * buchung.raw.Menge;
+                            material.deletedQuantity += inhalt.quantity + buchung.raw.Menge ;
                         }
                     }
 
