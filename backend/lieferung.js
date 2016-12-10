@@ -205,13 +205,14 @@ const Export = cms.registerSchema({
     });
 
 const DeletedBuchung = cms.registerSchema({
+    Id: Number,
     date: Date,
     Buchungsnummer: String,
     raw: {type: cms.mongoose.Schema.Types.Mixed, form: false}
 }, {
     name: 'DeletedBuchung',
     formatter: `<h4>{{model.name}}</h4>`,
-    title: 'name',
+    title: 'Id',
     isViewElement: false
 });
 

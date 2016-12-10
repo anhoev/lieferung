@@ -447,15 +447,21 @@ const Report = cms.registerSchema({
                 for (const _export of deletedExports) {
                     for (const item of _export.itemRaw) {
                         yield DeletedBuchung.findOneAndUpdate({
-                            Buchungsnummer: item.Buchungsnummer
-                        }, {
-                            Buchungsnummer: item.Buchungsnummer,
-                            date: item.Datum,
-                            raw: item
-                        }, {
-                            upsert: true,
-                            setDefaultsOnInsert: true
-                        }).exec();
+                                Buchungsnummer: item.Buchungsnummer,
+                                Id: item.raw.ID
+                            },
+                            {
+                                Buchungsnummer: item.Buchungsnummer,
+                                date: item.Datum,
+                                raw: item,
+                                Id: item.raw.ID
+                            }
+                            ,
+                            {
+                                upsert: true,
+                                setDefaultsOnInsert: true
+                            }
+                        ).exec();
                     }
                 }
 
