@@ -48,7 +48,7 @@
                 <h4 class="text-primary">{{data.groupName}} : </h4>
                 <br>
                 <div ng-repeat="food in data.group" ng-if="food.quantity > 0">
-                    <p class="bg-success" style="font-size: larger">{{food.name}} : {{ food.quantity }}</p>
+                    <p class="bg-success" style="font-size: larger">{{ food.quantity }} X {{food.name}}</p>
                     <br>
                 </div>
             </div>
