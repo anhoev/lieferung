@@ -112,29 +112,15 @@ const Benutzen = cms.registerSchema({
 
 // nav: Export
 const Export = cms.registerSchema({
-        date: {
-            type: Date, default: Date.now(), label: 'Tag',
-            query: {
-                form: {type: 'input', defaultValue: new Date(), templateOptions: {type: 'date', label: 'Tag'}},
-                fn: date => ({
-                    $gte: moment(date).clone().startOf('day').toDate(),
-                    $lte: moment(date).clone().endOf('day').toDate()
-                })
-            }
-        },
-        shipDate: {type: Date, default: Date.now(), label: 'Lieferdatum'},
+        date: {type: Date, default: Date.now(), label: 'Tag'},
         Id: Number,
         storno: Boolean,
         deleted: {type: Boolean, form: false},
         raw: {type: cms.mongoose.Schema.Types.Mixed, form: false},
         paymentOption: {type: String, form: makeSelect('EC', 'BAR Rechnung', 'Bewirtung'), label: 'Zahlungsmethod'},
         status: {type: String, form: makeSelect('BestellungErhalten', 'Bezahlt', 'Geliefert'), label: 'Zustand'},
-        //provider: {type: mongoose.Schema.Types.ObjectId, ref: 'Provider', autopopulate: true},
         note: {type: String, label: 'Notiz'},
         shippingCost: {type: Number, label: 'Lieferungskosten'},
-        fromInternet: {type: Boolean, label: 'Von Internet'},
-        showUstId: {type: Boolean, label: 'Ust-IdNr anzeigen'},
-        discount: {type: Number, form: makeSelect(5, 10, 15, 20, 25), label: 'Rabatt'},
         itemRaw: {type: [cms.mongoose.Schema.Types.Mixed], form: false},
         item: {
             type: [{
@@ -218,6 +204,16 @@ const Export = cms.registerSchema({
         },
     });
 
+const DeletedBuchung = cms.registerSchema({
+    date: Date,
+    Buchungsnummer: String,
+    raw: cms.mongoose.Schema.Types.Mixed
+}, {
+    name: 'DeletedBuchung',
+    formatter: `<h4>{{model.name}}</h4>`,
+    title: 'name',
+    isViewElement: true
+});
 
 const Protokoll = cms.registerSchema({
     Buchungsnummer: Number,

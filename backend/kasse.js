@@ -22,6 +22,7 @@ const Category = cms.getModel('Category');
 const Food = cms.getModel('Food');
 const Export = cms.getModel('Export');
 const Protokoll = cms.getModel('Protokoll');
+const DeletedBuchung = cms.getModel('DeletedBuchung');
 const RemovableOrder = cms.getModel('RemovableOrder');
 
 
@@ -86,7 +87,7 @@ const {accessQuery:accessQueryArtikel, accessOpen:accessOpenArtikel, accessClose
 
 cms.utils.access = {
     accessQuery, accessOpen, accessClose,
-    accessQueryProtokoll, accessOpenProtokoll,accessCloseProtokoll,
+    accessQueryProtokoll, accessOpenProtokoll, accessCloseProtokoll,
     accessQueryArtikel, accessOpenArtikel, accessCloseArtikel
 }
 
@@ -440,6 +441,17 @@ const Report = cms.registerSchema({
                 yield accessQuery(`delete from Umsaetze WHERE Datum >= #${moment(date).format('YYYY-MM-DD')} 04:00:00# `);
                 yield accessQuery(`Alter table Umsaetze alter column id Autoincrement(${firstItemId},1)`);
 
+
+                let deletedExports = _.filter(exports, e => e.deleted === true);
+                for (const _export of deletedExports) {
+                    for (const item of _export.itemRaw) {
+                        yield DeletedBuchung.create({
+                            Buchungsnummer: item.Buchungsnummer,
+                            date: item.Datum,
+                            raw: item
+                        });
+                    }
+                }
 
                 // filter
 
