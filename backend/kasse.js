@@ -448,7 +448,7 @@ const Report = cms.registerSchema({
                     for (const item of _export.itemRaw) {
                         yield DeletedBuchung.findOneAndUpdate({
                                 Buchungsnummer: item.Buchungsnummer,
-                                Id: item.raw.ID
+                                Id: item.ID
                             },
                             {
                                 Buchungsnummer: item.Buchungsnummer,
