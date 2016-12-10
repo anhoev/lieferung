@@ -25,7 +25,8 @@ const Protokoll = cms.getModel('Protokoll');
 const RemovableOrder = cms.getModel('RemovableOrder');
 
 const ReportSale = cms.registerSchema({
-        name: {type: String}
+        name: {type: String},
+        beginDate: Number
     },
     {
         name: 'ReportSale',
@@ -37,16 +38,24 @@ const ReportSale = cms.registerSchema({
         alwaysLoad: true,
         controller: function (cms, $scope, $timeout, Notification, $uibModal) {
             $scope.data = {
-
+                month: new Date()
             };
+
+            $scope.$watch('data.month', (month) => {
+                $scope.data.from = moment(month).clone().subtract(1, 'months').date($scope.model.beginDate).hour(4).toDate();
+                $scope.data.to = moment(month).clone().date($scope.model.beginDate).hour(4).toDate();
+            })
         },
-        serverFn: {
-        }
+        serverFn: {}
     });
 
 q.spawn(function *() {
-    yield ReportSale.findOneAndUpdate({}, {name: 'VerkaufBericht'}, {
-        upsert: true,
-        setDefaultsOnInsert: true
-    }).exec();
+    const reportSale = yield ReportSale.findOne({});
+
+    if (!reportSale) {
+        yield ReportSale.findOneAndUpdate({}, {name: 'VerkaufBericht'}, {
+            upsert: true,
+            setDefaultsOnInsert: true
+        }).exec();
+    }
 })
