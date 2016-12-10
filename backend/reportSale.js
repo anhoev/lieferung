@@ -36,7 +36,17 @@ const ReportSale = cms.registerSchema({
         autopopulate: true,
         alwaysLoad: true,
         controller: function (cms, $scope, $timeout, Notification, $uibModal) {
+            $scope.data = {
+
+            };
         },
         serverFn: {
         }
     });
+
+q.spawn(function *() {
+    yield Report.findOneAndUpdate({}, {name: 'VerkaufBericht'}, {
+        upsert: true,
+        setDefaultsOnInsert: true
+    }).exec();
+})
