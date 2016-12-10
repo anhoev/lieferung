@@ -14,14 +14,24 @@ function merge() {
 
 const {mongoose, utils:{makeSelect, makeMultiSelect, makeTypeSelect, makeStyles, makeCustomSelect}} = cms;
 
+const Category = cms.registerSchema({
+    Id: Number,
+    name: {type: String},
+}, {
+    name: 'Category',
+    label: 'Kategorie',
+    formatter: `<h4>{{model.name}}</h4>`,
+    title: 'name',
+    isViewElement: false,
+    autopopulate: true,
+    alwaysLoad: true
+});
+
 const Food = cms.registerSchema({
     name: {type: String},
     Id: String,
     price: {type: Number, label: 'Preis'},
-    category: {
-        type: String,
-        label: 'Kategorie'
-    },
+    category: {type: mongoose.Schema.Types.ObjectId, ref: 'Category', autopopulate: true, label: 'Kategorie'},
     removable: {type: Boolean, form: false}
 }, {
     name: 'Food',

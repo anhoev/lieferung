@@ -18,6 +18,7 @@ const notifier = require('node-notifier');
 
 const {mongoose, utils:{makeSelect, makeMultiSelect, makeTypeSelect, makeStyles, makeCustomSelect}} = cms;
 
+const Category = cms.getModel('Category');
 const Food = cms.getModel('Food');
 const Export = cms.getModel('Export');
 const Protokoll = cms.getModel('Protokoll');
@@ -594,24 +595,35 @@ var iconv = new Iconv('UTF-8', 'ISO-8859-1');
 
 function * importFoods() {
     //yield Food.find({}).remove().exec();
+    const {records:groups} = yield accessQueryArtikel('SELECT * FROM Artikelgruppen');
+
+    for (const record of groups) {
+        const group = {
+            Id: record.Nummer,
+            name: record.Name
+        };
+
+        yield Category.findOneAndUpdate({Id: group.Id}, group, {
+            upsert: true,
+            setDefaultsOnInsert: true
+        }).exec();
+
+    }
+
     const {records} = yield accessQueryArtikel('SELECT * FROM Artikel');
 
     for (const record of records) {
         const food = {
             Id: record.Artikelnummer,
             name: record.Artikelbezeichnung,
-            price: record.Preis1
+            price: record.Preis1,
+            category: yield Category.findOne({Id: record.Artikelgruppe})
         };
 
-
-        try {
-            yield Food.findOneAndUpdate({Id: food.Id}, food, {
-                upsert: true,
-                setDefaultsOnInsert: true
-            }).exec();
-        } catch (e) {
-            debugger;
-        }
+        yield Food.findOneAndUpdate({Id: food.Id}, food, {
+            upsert: true,
+            setDefaultsOnInsert: true
+        }).exec();
     }
 
 }
