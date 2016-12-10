@@ -78,7 +78,7 @@ const Material = cms.registerSchema({
 
 const Benutzen = cms.registerSchema({
     food: {type: mongoose.Schema.Types.ObjectId, ref: 'Food', autopopulate: true, label: 'Speise'},
-    benutzen: [{
+    inhalt: [{
         material: {type: mongoose.Schema.Types.ObjectId, ref: 'Material', autopopulate: true, label: 'Material'},
         quantity: {type: Number, label: 'Menge'},
     }]
