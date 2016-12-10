@@ -81,6 +81,7 @@ function sql(_path) {
 
 const {accessQuery, accessOpen, accessClose} = sql(`Provider=Microsoft.ACE.OLEDB.12.0;Data Source=C:\\BONitFlexX\\Umsaetze.mdb;Jet OLEDB:Database Password=213819737111;`);
 const {accessQuery:accessQueryProtokoll, accessOpen:accessOpenProtokoll, accessClose:accessCloseProtokoll} = sql(`Provider=Microsoft.ACE.OLEDB.12.0;Data Source=C:\\BONitFlexX\\Protokoll.mdb;Jet OLEDB:Database Password=213819737111;`);
+const {accessQuery:accessQueryArtikel, accessOpen:accessOpenArtikel, accessClose:accessCloseArtikel} = sql(`Provider=Microsoft.ACE.OLEDB.12.0;Data Source=C:\\BONitFlexX\\Artikel.mdb;Jet OLEDB:Database Password=213819737111;`);
 
 const Report = cms.registerSchema({
         name: {type: String},
@@ -206,7 +207,7 @@ const Report = cms.registerSchema({
 
             $scope.importFoods = function () {
                 cms.execServerFn('Report', $scope.model, 'importFoods').then(function () {
-                    confirm('Import successful!');
+                    Notification.primary('Import successful!');
                 });
             }
 
@@ -336,12 +337,14 @@ const Report = cms.registerSchema({
             openConnection: function *() {
                 yield accessOpen();
                 yield accessOpenProtokoll();
+                yield accessOpenArtikel();
             },
             //nav: closeConnection
             closeConnection: function *() {
                 // notifier.notify('Close Connection');
                 yield accessClose();
                 yield accessCloseProtokoll();
+                yield accessCloseArtikel();
             },
             beginDay: function *() {
                 const {records} = yield accessQuery('select * from Rechnungen where TagabNr = 0');
@@ -591,9 +594,7 @@ var iconv = new Iconv('UTF-8', 'ISO-8859-1');
 
 function * importFoods() {
     yield Food.find({}).remove().exec();
-    console.time('access');
-    const {records} = yield accessQuery('SELECT * FROM Artikel');
-    console.timeEnd('access');
+    const {records} = yield accessQueryArtikel('SELECT * FROM Artikel');
     yield * _importFoods(records);
 }
 
@@ -601,10 +602,8 @@ function * _importFoods(records) {
     yield Food.find({}).remove().exec();
     for (const record of records) {
         const food = new Food({
-            Id: record.Artikel_ID,
-            name: record.Bezeichnung,
-            category: record.Kategorie2,
-            removable: record.EANcode !== 'X'
+            Id: record.Artikelnummer,
+            name: record.Artikelbezeichnung
         });
 
         const save = function *() {
@@ -617,17 +616,6 @@ function * _importFoods(records) {
         }
 
         yield * save();
-
-        console.time('access');
-        const data = yield accessQuery(`SELECT * FROM Karte WHERE Artikel_ID = "${record.Artikel_ID}" AND PListe_ID = 1`);
-        console.timeEnd('access');
-        if (data) {
-            if (data.records[0]) {
-                food.price = data.records[0].Preis;
-                yield * save();
-            }
-        }
-
     }
 
 }
