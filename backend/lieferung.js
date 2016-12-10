@@ -88,7 +88,7 @@ const Benutzen = cms.registerSchema({
     formatter: `
             <h4></h4>
         `,
-    title: 'name',
+    title: 'food',
     isViewElement: false,
     autopopulate: true,
     alwaysLoad: true,
@@ -182,7 +182,7 @@ const Export = cms.registerSchema({
         label: 'Bestellung',
         formatterUrl: 'backend/export.html',
         title: 'date',
-        isViewElement: false,
+        isViewElement: true,
         fn: {},
         autopopulate: true,
         tabs: [
