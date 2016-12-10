@@ -29,6 +29,8 @@ const Food = cms.getModel('Food');
 const Export = cms.getModel('Export');
 const Protokoll = cms.getModel('Protokoll');
 const RemovableOrder = cms.getModel('RemovableOrder');
+const Material = cms.getModel('Material');
+const Benutzen = cms.getModel('Benutzen');
 
 const ReportSale = cms.registerSchema({
         name: {type: String},
@@ -73,10 +75,10 @@ const ReportSale = cms.registerSchema({
         },
         serverFn: {
             report: function *(from, to, type) {
+                const {records: buchungen} = yield accessQuery(`SELECT * FROM Umsaetze WHERE Datum Between #${moment(from).format('YYYY-MM-DD HH:00:00')}# And #${moment(to).format('YYYY-MM-DD HH:00:00')}#`);
+
                 if (type === 'Artikel') {
                     const foods = yield Food.find({}).lean();
-
-                    const {records: buchungen} = yield accessQuery(`SELECT * FROM Umsaetze WHERE Datum Between #${moment(from).format('YYYY-MM-DD HH:00:00')}# And #${moment(to).format('YYYY-MM-DD HH:00:00')}#`);
 
                     for (const buchung of buchungen) {
                         const food = _.find(foods, f => f.name === buchung.Bezeichnung);
@@ -89,7 +91,17 @@ const ReportSale = cms.registerSchema({
 
                     return groups;
                 } else {
+                    const Benutzens = yield Benutzen.find({}).lean();
+                    const materials = yield Material.find({}).lean();
 
+                    for (const buchung of buchungen) {
+                        const benutzen = _.find(Benutzens, m => m.food.name === buchung.Bezeichnung);
+                        if (!benutzen) continue;
+                        if (!benutzen.quantity) benutzen.quantity = 0;
+                        benutzen.quantity ++ ;
+                    }
+
+                    materials
                 }
             }
         }
