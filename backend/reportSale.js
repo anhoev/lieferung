@@ -68,9 +68,11 @@ const ReportSale = cms.registerSchema({
 
                 for (const buchung of buchungen) {
                     const food = _.find(foods, f => f.name === buchung.Bezeichnung);
+                    if (!food) continue;
+                    if (!food.quantity) food.quantity = 0;
                     food.quantity ++;
                 }
-                
+
                 debugger
             }
         }
