@@ -56,7 +56,7 @@
 <div class="row" ng-if="data.type === 'Material'" style="padding: 20px;">
     <h4>Material:   </h4>
     <br>
-    <div ng-repeat="material in materials">
+    <div ng-repeat="material in materials" ng-if="material.quantity > 0">
         {{ material.quantity }} {{ material.name }}
     </div>
 </div>
