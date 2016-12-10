@@ -117,17 +117,6 @@ const Export = cms.registerSchema({
         //provider: {type: mongoose.Schema.Types.ObjectId, ref: 'Provider', autopopulate: true},
         note: {type: String, label: 'Notiz'},
         shippingCost: {type: Number, label: 'Lieferungskosten'},
-        customer: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'Customer',
-            autopopulate: true,
-            label: 'Kunden',
-            form: {
-                templateOptions: {
-                    async: true
-                }
-            }
-        },
         fromInternet: {type: Boolean, label: 'Von Internet'},
         showUstId: {type: Boolean, label: 'Ust-IdNr anzeigen'},
         discount: {type: Number, form: makeSelect(5, 10, 15, 20, 25), label: 'Rabatt'},
