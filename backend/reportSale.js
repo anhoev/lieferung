@@ -44,6 +44,7 @@ const ReportSale = cms.registerSchema({
         alwaysLoad: true,
         controller: function (cms, $scope, $timeout, Notification, $uibModal) {
             $scope.data = {
+                type: 'Artikel',
                 month: new Date()
             };
 
@@ -60,20 +61,24 @@ const ReportSale = cms.registerSchema({
         },
         serverFn: {
             report: function *(from, to, type) {
-                const foods = yield Food.find({}).lean();
+                if (type === 'Artikel') {
+                    const foods = yield Food.find({}).lean();
 
-                const groups = _.groupBy(foods, food => food.category.name);
+                    const {records: buchungen} = yield accessQuery(`SELECT * FROM Umsaetze WHERE Datum Between #${moment(from).format('YYYY-MM-DD HH:00:00')}# And #${moment(to).format('YYYY-MM-DD HH:00:00')}#`);
 
-                const {records: buchungen} = yield accessQuery(`SELECT * FROM Umsaetze WHERE Datum Between #${moment(from).format('YYYY-MM-DD HH:00:00')}# And #${moment(to).format('YYYY-MM-DD HH:00:00')}#`);
+                    for (const buchung of buchungen) {
+                        const food = _.find(foods, f => f.name === buchung.Bezeichnung);
+                        if (!food) continue;
+                        if (!food.quantity) food.quantity = 0;
+                        food.quantity ++;
+                    }
 
-                for (const buchung of buchungen) {
-                    const food = _.find(foods, f => f.name === buchung.Bezeichnung);
-                    if (!food) continue;
-                    if (!food.quantity) food.quantity = 0;
-                    food.quantity ++;
+                    const groups = _.groupBy(foods, food => food.category.name);
+
+                    return groups;
+                } else {
+
                 }
-
-                debugger
             }
         }
     });
