@@ -102,7 +102,7 @@ const ReportSale = cms.registerSchema({
                         const food = _.find(foods, f => f.name === buchung.raw.Bezeichnung);
                         if (!food) continue;
                         if (!food.deletedQuantity) food.deletedQuantity = 0;
-                        food.deletedQuantity += buchung.Menge;
+                        food.deletedQuantity += buchung.raw.Menge;
                     }
 
                     const groups = _.groupBy(foods, food => food.category.name);
