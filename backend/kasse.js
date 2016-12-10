@@ -593,13 +593,12 @@ var {Iconv}  = require('iconv');
 var iconv = new Iconv('UTF-8', 'ISO-8859-1');
 
 function * importFoods() {
-    yield Food.find({}).remove().exec();
+    //yield Food.find({}).remove().exec();
     const {records} = yield accessQueryArtikel('SELECT * FROM Artikel');
     yield * _importFoods(records);
 }
 
 function * _importFoods(records) {
-    // yield Food.find({}).remove().exec();
     for (const record of records) {
         const food = new Food({
             Id: record.Artikelnummer,
