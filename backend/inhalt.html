@@ -1,0 +1,16 @@
+<div class="panel panel-default panel-xs shadow" style="margin-bottom: 10px;">
+    <div class="panel-body" style="padding: 5px;min-height: 120px" ng-class="{'bg-info': false}">
+        <span class="text-primary" style="font-weight: bold" ng-click="formService.edit(record._id, 'EmployeeRecord')">
+            {{model.food.name}} <span ng-if="model.Id" class="text-muted">({{model.food.Id}})</span>
+        </span>
+
+        <hr>
+
+        <div style="min-height: 70px">
+            <p class="bg-success" ng-repeat="item in model.inhalt">
+                {{item.quantity}} X {{ item.material.name }}
+            </p>
+        </div>
+
+    </div>
+</div>

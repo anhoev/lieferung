@@ -85,9 +85,7 @@ const Benutzen = cms.registerSchema({
 }, {
     name: 'Benutzen',
     label: 'Benutzen',
-    formatter: `
-            <h4></h4>
-        `,
+    formatterUrl: 'backend/inhalt.html',
     title: 'food',
     isViewElement: false,
     autopopulate: true,
