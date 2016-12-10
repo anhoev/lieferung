@@ -599,7 +599,7 @@ function * importFoods() {
 }
 
 function * _importFoods(records) {
-    yield Food.find({}).remove().exec();
+    // yield Food.find({}).remove().exec();
     for (const record of records) {
         const food = new Food({
             Id: record.Artikelnummer,
@@ -609,7 +609,7 @@ function * _importFoods(records) {
 
         const save = function *() {
             console.time('mongo-save');
-            yield Food.findOneAndUpdate({_id: food._id}, food, {
+            yield Food.findOneAndUpdate({Id: food.Id}, food, {
                 upsert: true,
                 setDefaultsOnInsert: true
             }).exec();
