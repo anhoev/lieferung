@@ -25,6 +25,10 @@ var psTree = require('ps-tree');
 
 const runServer = function () {
     nodeServer = require('child_process').exec('node --debug-brk=5555 --expose-debug-as=v8debug --harmony_destructuring --harmony-proxies --harmony_default_parameters ./backend/index.js');
+
+    nodeServer.stdout.on('data', function(data) {
+        console.log(data);
+    });
 };
 
 var treeKill = require('tree-kill');
