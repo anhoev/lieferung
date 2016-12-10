@@ -69,7 +69,8 @@ const ReportSale = cms.registerSchema({
                 waiting();
                 cms.execServerFn('ReportSale', $scope.model, 'report', $scope.data.from, $scope.data.to, $scope.data.type).then(function ({data}) {
                     window._waitingModal.close();
-                    $scope.groups = data;
+                    if (data.type === 'Artikel') $scope.groups = data;
+                    if (data.type === 'Material') $scope.materials = data;
                 })
             }
         },
@@ -96,12 +97,16 @@ const ReportSale = cms.registerSchema({
 
                     for (const buchung of buchungen) {
                         const benutzen = _.find(Benutzens, m => m.food.name === buchung.Bezeichnung);
-                        if (!benutzen) continue;
-                        if (!benutzen.quantity) benutzen.quantity = 0;
-                        benutzen.quantity ++ ;
-                    }
+                        if (!benutzen || !benutzen.inhalt) continue;
 
-                    materials
+                        for (const inhalt of benutzen.inhalt) {
+                            const material = _.find(materials, m => m.name === inhalt.material.name);
+                            if (!material) continue;
+                            if (!material.quantity) material.quantity = 0;
+                            material.quantity += inhalt.quantity;
+                        }
+                    }
+                    return materials;
                 }
             }
         }
