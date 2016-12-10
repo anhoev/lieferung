@@ -14,6 +14,7 @@ cms.use(require('./user'));
 cms.use(require('cmsmon/mobile'));
 require('./lieferung');
 require('./kasse');
+require('./reportSale');
 
 // cms.data.online.autoOpenAdmin = true;
 
