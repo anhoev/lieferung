@@ -45,11 +45,10 @@
     <div class="col-md-8" style="height: 700px;overflow-y: auto">
         <div class="panel panel-default" ng-if="data.groupName">
             <div class="panel-body">
-                <h5>{{data.groupName}} : </h5>
+                <h4>{{data.groupName}} : </h4>
                 <br>
                 <div ng-repeat="food in data.group" ng-if="food.quantity > 0">
-                    <span class="bg-success">{{food.name}} : {{ food.quantity }}</span>
-                    <br>
+                    <p class="bg-success" style="font-size: larger">{{food.name}} : {{ food.quantity }}</p>
                     <br>
                 </div>
             </div>
@@ -58,7 +57,7 @@
 </div>
 
 <div class="row" ng-if="data.type === 'Material'" style="padding: 20px;">
-    <h5>Material:   </h5>
+    <h4>Material:   </h4>
     <br>
     <div ng-repeat="material in materials" ng-if="material.quantity > 0">
         <span class="bg-success">{{ material.quantity }} {{ material.name }}</span>
