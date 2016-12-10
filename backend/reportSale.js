@@ -62,8 +62,8 @@ const ReportSale = cms.registerSchema({
             };
 
             $scope.$watch('data.month', (month) => {
-                $scope.data.from = moment(month).clone().subtract(1, 'months').date($scope.model.beginDate).hour(4).toDate();
-                $scope.data.to = moment(month).clone().date($scope.model.beginDate).hour(4).toDate();
+                $scope.data.from = moment(month).clone().subtract(1, 'months').date($scope.model.beginDate).toDate();
+                $scope.data.to = moment(month).clone().date($scope.model.beginDate -1).toDate();
             })
 
             $scope.report = function () {
@@ -83,8 +83,8 @@ const ReportSale = cms.registerSchema({
 
                 const deletedBuchungen = yield DeletedBuchung.find({
                     date: {
-                        $gte: from,
-                        $lte: to
+                        $gte: moment(from).hour(4).toDate(),
+                        $lte: moment(to).add(1, 'day').hour(4).toDate()
                     }
                 });
 
