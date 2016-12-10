@@ -606,8 +606,6 @@ function * _importFoods(records) {
             price: record.Preis1
         });
 
-        const test = yield Food.findOne({Id: food.Id});
-
         yield Food.findOneAndUpdate({Id: food.Id}, food, {
             upsert: true,
             setDefaultsOnInsert: true
