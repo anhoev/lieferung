@@ -47,12 +47,16 @@ const ReportSale = cms.registerSchema({
             })
 
             $scope.report = function () {
-                cms.execServerFn('ReportSale', $scope.model, 'Report', $scope.data.from, $scope.data.to, $scope.data.type).then(function (data) {
+                cms.execServerFn('ReportSale', $scope.model, 'report', $scope.data.from, $scope.data.to, $scope.data.type).then(function (data) {
 
                 })
             }
         },
-        serverFn: {}
+        serverFn: {
+            report: function *(from, to, type) {
+                debugger
+            }
+        }
     });
 
 q.spawn(function *() {
