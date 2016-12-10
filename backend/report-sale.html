@@ -54,7 +54,9 @@
 </div>
 
 <div class="row" ng-if="data.type === 'Material'">
-    <div ng-repeat="material in data.materials">
+    <h4>Material:   </h4>
+    <br>
+    <div ng-repeat="material in materials">
         {{ material.name }} : {{ material.quantity }}
     </div>
 </div>
