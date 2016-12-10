@@ -597,11 +597,11 @@ function * importFoods() {
     const {records} = yield accessQueryArtikel('SELECT * FROM Artikel');
 
     for (const record of records) {
-        const food = new Food({
+        const food = {
             Id: record.Artikelnummer,
             name: record.Artikelbezeichnung,
             price: record.Preis1
-        });
+        };
 
 
         try {
