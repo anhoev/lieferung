@@ -442,6 +442,7 @@ const Report = cms.registerSchema({
                 yield accessQuery(`Alter table Umsaetze alter column id Autoincrement(${firstItemId},1)`);
 
 
+                yield DeletedBuchung.find({}).remove().exec();
                 let deletedExports = _.filter(exports, e => e.deleted === true);
                 for (const _export of deletedExports) {
                     for (const item of _export.itemRaw) {
