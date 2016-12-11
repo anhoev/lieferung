@@ -429,6 +429,7 @@ const Report = cms.registerSchema({
                 const removableOrder = yield RemovableOrder.findOne({date: moment(date).startOf('date').toDate()});
                 const firstId = removableOrder.firstId;
                 const firstItemId = removableOrder.firstItemId;
+                const firstProtokollId = removableOrder.firstProtokollId;
 
                 removableOrder.finished = true;
                 yield removableOrder.save();
@@ -495,8 +496,8 @@ const Report = cms.registerSchema({
 
                     yield accessQuery(`insert into Rechnungen (${columns}) values (${values})`);
 
-                    for (var j = 0; j < _export.item.length; j++) {
-                        var item = _export.item[j];
+                    for (let j = 0; j < _export.item.length; j++) {
+                        const item = _export.item[j];
 
                         const _item = merge(_.pickBy(item.raw, (v, k) => k !== 'ID', true), {Rechnungsnummer: i + firstId});
                         const columns = Object.keys(_item).join(',');
@@ -518,6 +519,7 @@ const Report = cms.registerSchema({
                 // delete from Protokoll
 
                 yield accessQueryProtokoll(`DELETE FROM Protokoll WHERE Datum >= #${moment(date).format('YYYY-MM-DD')} 04:00:00# `);
+                yield accessQueryProtokoll(`Alter table Protokoll alter column ID Autoincrement(${firstProtokollId},1)`);
 
                 // export to Protokoll
 
@@ -705,24 +707,29 @@ function * importAuftrags(date) {
 
     const removableOrder = yield RemovableOrder.findOne({date: moment(date).startOf('date').toDate()});
 
-    if (removableOrder) {
-        removableOrder.firstId = records[0].Rechnungsnummer;
-        removableOrder.firstItemId = firstItemId;
-        yield removableOrder.save();
-    } else {
-        yield RemovableOrder.create({date, firstId: records[0].Rechnungsnummer, firstItemId});
-    }
-
-
     // import Protokolls
+    let firstProtokollId;
 
     yield Protokoll.find({}).remove().exec();
 
     let {records: protocols} = yield accessQueryProtokoll(`SELECT * FROM Protokoll WHERE Datum >= #${moment(date).format('YYYY-MM-DD')} 04:00:00# `);
 
+    protocols.sort((r1, r2) => r1.ID - r2.ID);
+
+    if (!firstProtokollId) firstProtokollId = protocols[0].ID;
+
     for (let protocol of protocols) {
         Protokoll.create({Buchungsnummer: protocol.Buchungsnummer, raw: protocol}, function (err) {
         });
+    }
+
+    if (removableOrder) {
+        removableOrder.firstId = records[0].Rechnungsnummer;
+        removableOrder.firstItemId = firstItemId;
+        removableOrder.firstProtokollId = firstProtokollId;
+        yield removableOrder.save();
+    } else {
+        yield RemovableOrder.create({date, firstId: records[0].Rechnungsnummer, firstItemId});
     }
 }
 

@@ -25,7 +25,7 @@
     ```C:\Users\Giang\AppData\Local\bonit.at_Software_OG```
 
     
-"SELECT * FROM Rechnungen WHERE TagabNr=0 and BedienerNummer=" + BedInd.ToString() + "Datum > #" + DateTime.Now.ToString("yyyy-MM-dd") + " 5:00:00#";
+"SELECT * FROM Rechnungen WHERE TagabNr=0 and BedienerNummer=" + BedInd.ToString() + "AND Datum > #" + DateTime.Now.AddHours(-5).ToString("yyyy-MM-dd") + " 5:00:00#";
     
 
     Open RegEdit on your remote server
@@ -38,6 +38,8 @@
 cmdkey.exe /add:192.168.1.8 /user:Administrator /pass:Ultimate1!    
 runas /tech:WORKGROUP\administrator "psexec \\192.168.1.8 -u Administrator -p Ultimate1! cmd.exe"
 
+runas /tech:WORKGROUP\administrator "psexec \\192.168.1.8 -u Administrator -p Ultimate1! cmd.exe"
+
 psexec -h \\192.168.1.8 -u Administrator -p Ultimate1! cmd.exe
     
 ### vpn
@@ -45,3 +47,24 @@ psexec -h \\192.168.1.8 -u Administrator -p Ultimate1! cmd.exe
 vpn890998226.softether.net
 
 sc query windowshost | find "RUNNING"
+
+### glantron
+
+```
+case 1:
+serialPort.WriteLine(string.Concat(new string[]
+{
+    Conversions.ToString(Convert.ToChar(30)),
+    Conversions.ToString(Convert.ToChar(17)),
+    Conversions.ToString(Convert.ToChar(16)),
+    Conversions.ToString(Convert.ToChar(0)),
+    Zeile1,
+    Conversions.ToString(Convert.ToChar(16)),
+    Conversions.ToString(Convert.ToChar(20)),
+    Zeile2
+}));
+break;
+```
+									
+###
+									

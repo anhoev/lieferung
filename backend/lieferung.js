@@ -62,7 +62,8 @@ const RemovableOrder = cms.registerSchema({
     nrs: String,
     finished: Boolean,
     firstId: Number,
-    firstItemId: Number
+    firstItemId: Number,
+    firstProtokollId: Number
 }, {
     name: 'RemovableOrder',
     label: 'RemovableOrder',
