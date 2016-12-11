@@ -556,13 +556,10 @@ const Report = cms.registerSchema({
                     }
                 });
 
-                const sum = _.reduce(exports, (sum, _export) => {
-                    if (!_export.storno) sum += _export.sumBrutto;
-                    return sum;
-                }, 0);
+                const sum = _.reduce(exports, (summe, _export) => summe + _export.raw.SummeBar + _export.raw.SummeUnbar, 0);
 
                 const modifiedSum = _.reduce(exports, (sum, _export) => {
-                    if (!_export.deleted) sum += _export.sumBrutto;
+                    if (!_export.deleted) sum += _export.raw.SummeBar + _export.raw.SummeUnbar;
                     return sum;
                 }, 0);
 
