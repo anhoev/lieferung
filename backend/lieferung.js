@@ -560,7 +560,7 @@ const Export = cms.registerSchema({
     label: 'Bestellung',
     formatterUrl: 'backend/export.html',
     title: 'date',
-    isViewElement: false,
+    isViewElement: true,
     fn: {},
     autopopulate: true,
     tabs: [
@@ -605,7 +605,7 @@ const Export = cms.registerSchema({
                 printer.println(_export.customer.name);
                 if (_export.customer.address.name && _export.customer.address.name !== _export.customer.name) printer.println(_export.customer.address.name);
                 printer.print('   ' + _export.customer.address.street);
-                if  (_export.customer.address.street.indexOf(_export.customer.address.houseNumber + '') === -1) printer.print(' ' + _export.customer.address.houseNumber);
+                if (_export.customer.address.street.indexOf(_export.customer.address.houseNumber + '') === -1) printer.print(' ' + _export.customer.address.houseNumber);
 
                 if (_export.customer.address.floor) printer.println(`Etage: ${_export.customer.address.floor}`);
                 printer.println(`${_export.customer.address.zipcode} ${_export.customer.address.city}`);
@@ -775,7 +775,7 @@ const Export = cms.registerSchema({
                         $scope.data = {};
                         $scope.instance = $uibModalInstance;
 
-                        $scope.cancel = ()=>$uibModalInstance.dismiss('cancel');
+                        $scope.cancel = () => $uibModalInstance.dismiss('cancel');
                         $scope.print = () => {
                             $('#rechnung').printThis({debug: true});
                         };
@@ -804,7 +804,7 @@ const Export = cms.registerSchema({
                         $scope.data = {};
                         $scope.instance = $uibModalInstance;
 
-                        $scope.cancel = ()=>$uibModalInstance.dismiss('cancel');
+                        $scope.cancel = () => $uibModalInstance.dismiss('cancel');
                         $scope.print = () => {
                             $('#rechnung').printThis({debug: true});
                         };
@@ -829,8 +829,11 @@ const Export = cms.registerSchema({
     }
 });
 
+const json2csv = require('json2csv');
+
 const Report = cms.registerSchema({
-    name: {type: String}
+    name: {type: String},
+    password: String
 }, {
     name: 'Report',
     label: 'Kassenbericht',
@@ -839,7 +842,7 @@ const Report = cms.registerSchema({
     isViewElement: false,
     autopopulate: true,
     alwaysLoad: true,
-    controller: function (cms, $scope, $timeout) {
+    controller: function (cms, $scope, $timeout, $uibModal, Notification, FileSaver) {
         $scope.data = {
             date: new Date()
         }
@@ -885,30 +888,141 @@ const Report = cms.registerSchema({
             _export.showUstId = !_export.showUstId;
             $scope.save(_export);
         }
+
+        $scope.login = function (cb) {
+            $uibModal.open({
+                template: `
+                <div style="padding: 20px;">
+                    <form class="form">
+                        <input class="form-control" type="password" placeholder="Password" ng-model="password">
+                        <br>
+                        <button class="btn btn-default" ng-click="modal.close(password);">OK</button>
+                        <button class="btn btn-default" ng-click="modal.dismiss()">Abbrechen</button>
+                    </form>
+                </div>
+                `,
+                controller: function ($scope, $uibModalInstance, formService, cms) {
+                    $scope.modal = $uibModalInstance;
+                }
+            }).result.then(function (password) {
+                cms.execServerFn('Report', $scope.model, 'checkPassword', password).then(function ({data}) {
+                    if (data === 'true') {
+                        Notification.primary('Login successful')
+                        $scope.data.login = true;
+
+                        if (cb) cb();
+                    }
+                })
+            });
+        }
+
+        $scope.changePassword = function () {
+            if (!$scope.data.login) return;
+
+            $uibModal.open({
+                template: `
+                <div style="padding: 20px;">
+                    <form class="form">
+                        <input class="form-control" type="password" placeholder="New Password" ng-model="password">
+                        <br>
+                        <button class="btn btn-default" ng-click="modal.close(password);">OK</button>
+                        <button class="btn btn-default" ng-click="modal.dismiss()">Abbrechen</button>
+                    </form>
+                </div>
+                `,
+                controller: function ($scope, $uibModalInstance, formService, cms) {
+                    $scope.modal = $uibModalInstance;
+                }
+            }).result.then(function (password) {
+                cms.execServerFn('Report', $scope.model, 'changePassword', password).then(function ({data}) {
+                    Notification.primary('Change password successful !');
+                })
+            });
+        }
+
+        $scope.$on('$destroy', function () {
+            shortcut.remove("F4");
+
+            shortcut.remove("Shift+F4");
+        });
+
+        $scope.gdpdu = function () {
+            cms.execServerFn('Report', $scope.model, 'gdpdu').then(function ({data}) {
+                const _data = new Blob([data], {type: 'text/plain;charset=utf-8'});
+                FileSaver.saveAs(_data, 'gdpdu.csv');
+            })
+        }
+
+
+    },
+    link: function (scope, element) {
+        setTimeout(function () {
+            $(element).find('.cms-element-controll-icon').css('display', 'none');
+
+            shortcut.add("F4", function () {
+                scope.login(function () {
+                    $(element).find('.cms-element-controll-icon').css('display', 'block');
+                });
+            });
+
+            shortcut.add("Shift+F4", function () {
+                scope.changePassword();
+            });
+        })
     },
     serverFn: {
+        gdpdu: function *() {
+            const exports = yield Export.find({});
+            _.sortBy(exports, ['date']);
+            let i = 0, data = [];
+            exports.forEach(_export => {
+                i++;
+                for (let j = 0; j < _export.item.length; j++) {
+                    let item = _export.item[j];
+                    data.push({
+                        RechnungNr: i,
+                        KundenNr: _export.customer.phone,
+                        Datum: moment(_export.date).format('DD-MM-YYYY HH:mm:ss'),
+                        Storno: 'Nein',
+                        Begründung: '',
+                        Position: j,
+                        ArtikelNr: item.food.Id,
+                        Bezeichnung: item.food.name,
+                        Menge: item.quantity,
+                        Stückpreis: item.price,
+                        Gesamt: item.quantity * item.price
+                    });
+                }
+            })
+            const result = json2csv({
+                data,
+                fields: ['RechnungNr', 'KundenNr', 'Datum', 'Storno', 'Begründung', 'Position', 'ArtikelNr', 'Bezeichnung', 'Menge', 'Stückpreis', 'Gesamt']
+            });
+
+            return result;
+        },
+        checkPassword: function *(password) {
+            return this.password === password;
+        },
+        changePassword: function *(password) {
+            this.password = password;
+            yield this.save();
+        },
         queryExport: function *(date) {
             const exports = yield Export.find({
                 date: {
                     $gte: moment(date).startOf('day').toDate(),
                     $lte: moment(date).endOf('day').toDate()
-                },
-                fromInternet: {
-                    $ne: true
-                },
-                showUstId: {
-                    $ne: true
-                }
+                }/*,
+                 fromInternet: {
+                 $ne: true
+                 },
+                 showUstId: {
+                 $ne: true
+                 }*/
             });
 
-            const exportsAll = yield Export.find({
-                date: {
-                    $gte: moment(date).startOf('day').toDate(),
-                    $lte: moment(date).endOf('day').toDate()
-                }
-            });
-
-            const sum = _.reduce(exportsAll, (sum, _export) => {
+            const sum = _.reduce(exports, (sum, _export) => {
                 sum += _export.sumBrutto;
                 return sum;
             }, 0);
