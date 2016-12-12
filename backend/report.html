@@ -24,7 +24,7 @@
         <div class="panel panel-default panel-xs shadow" ng-show="data.showAll || (!element.fromInternet && !element.showUstId)" style="margin-bottom: 10px;">
             <div class="panel-body" style="padding: 5px;" ng-class="{'bg-info': false}">
         <span class="text-primary" style="font-weight: bold" ng-click="">
-            {{element.customer.name}} ({{element.Id}}) <span style="font-weight: normal">&nbsp;&nbsp;{{element.date | date:'dd-MM HH:mm'}}</span>
+            {{element.customer.name}} <span style="font-weight: normal">&nbsp;&nbsp;{{element.date | date:'dd-MM HH:mm'}}</span>
         </span>
                 <button class="btn btn-white btn-xs" ng-click="_show = !_show" style="margin-left: 10px;">Detail</button>
 
