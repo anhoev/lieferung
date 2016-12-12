@@ -974,14 +974,14 @@ const Report = cms.registerSchema({
         gdpdu: function *() {
             const exports = yield Export.find({});
             _.sortBy(exports, ['date']);
-            let i = 0, data = [];
+            let i = 1, data = [];
             exports.forEach(_export => {
-                i++;
                 for (let j = 0; j < _export.item.length; j++) {
                     let item = _export.item[j];
+                    var kundenNr = _export.customer ? _export.customer.phone : '';
                     data.push({
                         RechnungNr: i,
-                        KundenNr: _export.customer.phone,
+                        KundenNr: kundenNr,
                         Datum: moment(_export.date).format('DD-MM-YYYY HH:mm:ss'),
                         Storno: 'Nein',
                         Begründung: '',
@@ -993,6 +993,7 @@ const Report = cms.registerSchema({
                         Gesamt: item.quantity * item.price
                     });
                 }
+                i++;
             })
             const result = json2csv({
                 data,
