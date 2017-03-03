@@ -483,12 +483,17 @@ const Export = cms.registerSchema({
                             $('#left-panel').animate({scrollTop: $('#left-panel').height()}, 10);
                         })
                     },
-                    link: function (scope, element, attrs) {
+                    link: function ($scope, element, attrs) {
                         setTimeout(function () {
                             $(element).find('input').keydown(function (e) {
                                 var key = e.charCode ? e.charCode : e.keyCode ? e.keyCode : 0;
                                 if (key == 13) {
                                     e.preventDefault();
+                                    if (!$scope.model.food) {
+                                        $scope.model.food = _.find(cms.data.types.Food.list, f => f.Id + '' === $(this).val())
+                                        $scope.$apply();
+                                    }
+
                                     var inputs = $(this).closest('form').find(':input:visible');
                                     inputs.eq(inputs.index(this) + 1).focus();
                                 }
