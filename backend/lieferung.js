@@ -12,7 +12,7 @@ function merge() {
     return _merge(true, ...arguments);
 }
 
-const {mongoose, utils:{makeSelect, makeMultiSelect, makeTypeSelect, makeStyles, makeCustomSelect}} = cms;
+const {mongoose, utils: {makeSelect, makeMultiSelect, makeTypeSelect, makeStyles, makeCustomSelect}} = cms;
 
 const Print = require('printer');
 
@@ -771,7 +771,7 @@ const Export = cms.registerSchema({
     },
     controller: function ($scope, formService, cms, $uibModal) {
         $scope.openLieferschein = function () {
-            cms.execServerFn('Export', $scope.model, 'getPersonalInformation').then(({data:info}) => {
+            cms.execServerFn('Export', $scope.model, 'getPersonalInformation').then(({data: info}) => {
                 $uibModal.open({
                     templateUrl: 'lieferschein.html',
                     controller: function ($scope, $uibModalInstance, formService, model) {
@@ -800,7 +800,7 @@ const Export = cms.registerSchema({
         }
 
         $scope.openRechnung = function () {
-            cms.execServerFn('Export', $scope.model, 'getPersonalInformation').then(({data:info}) => {
+            cms.execServerFn('Export', $scope.model, 'getPersonalInformation').then(({data: info}) => {
                 $uibModal.open({
                     templateUrl: 'rechnung.html',
                     controller: function ($scope, $uibModalInstance, formService, model) {
@@ -1401,7 +1401,11 @@ const OrderView = cms.registerSchema({
                 }
                 $scope.data.phone = _data.phone;
 
-                $scope.$digest();
+                try {
+                    $scope.$digest();
+                } catch (e) {
+                    setTimeout(() => $scope.$digest(), 700);
+                }
 
             })
 
