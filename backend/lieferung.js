@@ -1285,6 +1285,10 @@ const OrderView = cms.registerSchema({
                     if ($scope.data.customer.showUstId) $scope.data.export.showUstId = true;
                     $scope.data.export.item = _.filter($scope.data.export.item, item => item.food);
 
+                    $scope.data.export.item.forEach(i => {
+                        if (!i.quantity || i.quantity === 0) i.quantity = 1;
+                    })
+
                     if (!$scope.data.export.customer) $scope.data.export.customer = $scope.data.customer;
 
                     function _order() {
