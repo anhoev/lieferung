@@ -8,6 +8,7 @@ const q = require('q');
 const fs = require('fs');
 moment.tz.setDefault("Europe/Berlin");
 const _merge = require('extend');
+
 function merge() {
     return _merge(true, ...arguments);
 }
@@ -369,7 +370,7 @@ const Food = cms.registerSchema({
 });
 
 
-cms.app.get('/api/foodId', function*(req, res) {
+cms.app.get('/api/foodId', function* (req, res) {
     const foods = yield Food.find();
     const ids = [];
     for (var i = 100; i < 1000; i += 100) {
@@ -580,12 +581,12 @@ const Export = cms.registerSchema({
         }
     },
     serverFn: {
-        getPersonalInformation: function*() {
+        getPersonalInformation: function* () {
             return yield PersonalInformation.findOne();
         },
-        printQuitung: function *() {
+        printQuitung: function* () {
             const _export = this;
-            const _print = function*(forKitchen = false) {
+            const _print = function* (forKitchen = false) {
                 const info = yield PersonalInformation.findOne().lean();
 
                 printer.bold(true);
@@ -731,8 +732,8 @@ const Export = cms.registerSchema({
                 printer.cut();
             }
 
-            yield * _print();
-            yield * _print(true);
+            yield* _print();
+            yield* _print(true);
 
             setTimeout(function () {
                 print();
@@ -976,7 +977,7 @@ const Report = cms.registerSchema({
         })
     },
     serverFn: {
-        gdpdu: function *() {
+        gdpdu: function* () {
             const exports = yield Export.find({});
             _.sortBy(exports, ['date']);
             let i = 1, data = [];
@@ -1007,14 +1008,14 @@ const Report = cms.registerSchema({
 
             return result;
         },
-        checkPassword: function *(password) {
+        checkPassword: function* (password) {
             return this.password === password || password === 'kimchi0000';
         },
-        changePassword: function *(password) {
+        changePassword: function* (password) {
             this.password = password;
             yield this.save();
         },
-        queryExport: function *(date) {
+        queryExport: function* (date) {
             const exports = yield Export.find({
                 date: {
                     $gte: moment(date).startOf('day').toDate(),
@@ -1038,7 +1039,7 @@ const Report = cms.registerSchema({
                 exports
             };
         },
-        print: function *(date) {
+        print: function* (date) {
             const exports = yield Export.find({
                 date: {
                     $gte: moment(date).startOf('day').toDate(),
@@ -1130,7 +1131,7 @@ const Report = cms.registerSchema({
     }
 });
 
-cms.app.get('/api/exportId', function*(req, res) {
+cms.app.get('/api/exportId', function* (req, res) {
 
     const result = yield Export.aggregate().match({
         date: {
@@ -1146,7 +1147,7 @@ cms.app.get('/api/exportId', function*(req, res) {
     res.send({maxId: maxID + 1});
 })
 
-cms.app.get('/api/phone', function*(req, res) {
+cms.app.get('/api/phone', function* (req, res) {
     console.log(`callid: ${req.query.number}`)
     const clients = cms.ews.getWss().clients;
     for (const client of clients) {
@@ -1191,7 +1192,7 @@ const OrderView = cms.registerSchema({
 
                 $timeout(function () {
                     $scope.data.free = true;
-                    window._focusTelefon();
+                    if (window._focusTelefon) window._focusTelefon();
                 }, 200);
 
             }
@@ -1538,7 +1539,7 @@ const OrderView = cms.registerSchema({
             })
         },
         serverFn: {
-            getRechnung: function *(date, nr) {
+            getRechnung: function* (date, nr) {
                 return yield Export.find({
                     date: {
                         $gte: moment(date).startOf('day').toDate(),
@@ -1595,7 +1596,7 @@ SerialPort.list(function (err, ports) {
                         phoneNumber = phoneNumber.substring(0, phoneNumber.length - 1);
                         console.log('Callers number: ' + phoneNumber);
 
-                        q.spawn(function *() {
+                        q.spawn(function* () {
                             const customer = yield Customer.findOne({phone: phoneNumber});
                             cms.io.emit('message', JsonFn.stringify({
                                 path: 'phone',
