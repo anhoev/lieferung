@@ -1292,10 +1292,14 @@ const OrderView = cms.registerSchema({
                     if (!$scope.data.export.customer) $scope.data.export.customer = $scope.data.customer;
 
                     function _order() {
-                        cms.createElement('Export', $scope.data.export, function (_export) {
+                        cms.updateElement(type, content, function (_export) {
                             cms.execServerFn('Export', _export, 'printQuitung');
+                            console.log('clear!!!');
                             $scope.clear();
-                        }, false)
+                        }, function () {
+                            console.log('clear!!!');
+                            $scope.clear();
+                        }, true);
                     }
 
                     if (!$scope.data.customer._id) {
